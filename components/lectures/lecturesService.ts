@@ -1,25 +1,16 @@
-import LectureDAL from './lecturesDAL';
-import {connectDB} from '../../database/connect';
-
-class LectureService implements LectureDAL {
-
-    pool:any;
-
-    constructor() {
-        let getConnectionPool = async () => {
-            this.pool = await connectDB();
-            console.log("TCL: LectureService -> getConnectionPool -> this.pool", this.pool)
-        };
-        getConnectionPool();
-    }
-
+const sql = require('mssql');
+class LectureService  {
 
     async findAll() {
-        return await this.pool.query('SELECT * FROM GIANG_VIEN');
+        return await sql.db.query('SELECT * FROM GIANG_VIEN');
     }
 
     async findById(id:string) {
-        return await this.pool.query(`SELECT * FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}'`);
+        return await sql.db.query(`SELECT * FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}'`);
+    }
+
+    async findBirthById(id:string) {
+        return await sql.db.query(`SELECT NGAY_SINH FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}'`);
     }
 
 }

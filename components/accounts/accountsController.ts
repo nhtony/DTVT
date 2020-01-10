@@ -12,7 +12,6 @@ class AccountsController {
             const data = await AccountService.findAll();
             res.status(200).send(data.recordset);
         } catch (error) {
-            console.log("TCL: module.exports.getAccounts -> error", error)
             res.status(500).send();
         }
     }
@@ -42,17 +41,19 @@ class AccountsController {
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
             const { password, role, id, birth } = req.body;
+            console.log("TCL: AccountsController -> createAccount -> birth", birth)
 
             // Check ID có hợp lệ không
-            const result = type ? await LectureService.findById(id) : await StudentService.findById(id);
-
+            const result = type ? await LectureService.findBirthById(id) : await StudentService.findBirthById(id);
 
             if (!result.recordset.length) return res.status(400).send({ message: "Please enter your ID exactly!" });
 
             const { NGAY_SINH } = result.recordset[0];
-
-            let formatted_date = NGAY_SINH.getFullYear() + "-" + appendLeadingZeroes(NGAY_SINH.getMonth() + 1) + "-" + NGAY_SINH.getDate();
-
+            
+            console.log("TCL: AccountsController -> createAccount -> NGAY_SINH", NGAY_SINH)
+           
+            const formatted_date:string = NGAY_SINH.getFullYear() + "-" + appendLeadingZeroes(NGAY_SINH.getMonth() + 1) + "-" + appendLeadingZeroes(NGAY_SINH.getDate());
+            
             if (!type) {
                 if (formatted_date !== birth) return res.status(400).send({ message: "Can not access!" });
             }
