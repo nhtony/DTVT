@@ -2,15 +2,16 @@ import { Request, Response, NextFunction } from "express";
 import OTPService from './otpService';
 import AccountService from '../accounts/accountsService';
 import StudentService from '../students/studentsService';
-import {sendEmail} from '../../services/mailer';
+import { sendEmail } from '../../services/mailer';
+import {generateOTP} from '../../common/index';
 
 class OTPController {
 
     private nextReq = {
-        code:'',
-        email:'',
-        id:'',
-        otp:'',
+        code: '',
+        email: '',
+        id: '',
+        expirationTime: 5000
     };
 
     sendOTP = async (req: Request, res: Response, next: NextFunction) => {
@@ -27,7 +28,7 @@ class OTPController {
 
             const otp = generateOTP();
 
-            const sentEmail = await sendEmail(email,otp);
+            const sentEmail = await sendEmail(email, otp);
 
             if (!sentEmail) return res.status(500).send({ massage: "Fail to send mail!" });
 
@@ -43,35 +44,39 @@ class OTPController {
         }
     }
 
-    saveOTP = async (req:Request, res:Response) => {
+    saveOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const updateOTP = await OTPService.update(this.nextReq.code,this.nextReq.email,this.nextReq.id);
+            const updateOTP = await OTPService.update(this.nextReq.code, this.nextReq.email, this.nextReq.id);
             if (!updateOTP.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
-            res.status(200).send({ massage: 'Success!' });
+            res.status(200).send(
+                {
+                    massage: 'Success!',
+                    data: { expirationTime: this.nextReq.expirationTime }
+                });
+            this.autoDeleteOTP();
         } catch (error) {
             console.log("TCL: module.exports.saveOTP -> error", error);
             res.status(500).send();
         }
     }
- 
-    verifyOTP = async (req:Request, res:Response, next:NextFunction) => {
+
+    verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { otp, id } = req.body;
-            const result = await OTPService.find(otp,id);
-            
-    
+            const result = await OTPService.find(otp, id);
+
             if (!result.recordset.length) return res.status(500).send({ massage: "OTP was expired" });
-    
+
             const { EMAIL } = result.recordset[0];
-           
-            const newEmail = await StudentService.updateEmailById(EMAIL,id);
-    
+
+            const newEmail = await StudentService.updateEmailById(EMAIL, id);
+
             if (!newEmail.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
-    
-            this.nextReq.otp = otp;
+
+            this.nextReq.code = otp;
             this.nextReq.id = id;
             next();
-    
+
         } catch (error) {
             console.log("TCL: module.exports.verifyOTP -> error", error)
             res.status(500).send();
@@ -88,9 +93,9 @@ class OTPController {
         }
     }
 
-    deleteOTP = async (req:Request, res:Response) => {
+    deleteOTP = async (req: Request, res: Response) => {
         try {
-            const deletedOTP = await OTPService.delete(this.nextReq.otp);
+            const deletedOTP = await OTPService.delete(this.nextReq.code);
             if (!deletedOTP.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send({ massage: 'Success!' });
         } catch (error) {
@@ -98,17 +103,22 @@ class OTPController {
             res.status(500).send();
         }
     }
+
+    private autoDeleteOTP = () => {
+        setTimeout(async () => {
+            try {
+                const deletedOTP = await OTPService.delete(this.nextReq.code);
+                if (deletedOTP.rowsAffected.length) {
+                    console.log('deleted OTP');
+                    return;
+                }
+            } catch (error) {
+                console.log("TCL: OTPController -> privateautoDeleteOTP -> error", error);
+                return;
+            }
+        }, this.nextReq.expirationTime);
+    }
 }
 
 export default new OTPController();
 
-const generateOTP = () => {
-    const digits = '0123456789';
-    const otpLength = 6;
-    let otp = '';
-    for (let i = 1; i <= otpLength; i++) {
-        let index = Math.floor(Math.random() * (digits.length));
-        otp = otp + digits[index];
-    }
-    return otp;
-}

@@ -3,7 +3,7 @@ import AccountService from './accountsService';
 import LectureService from '../lectures/lecturesService';
 import StudentService from '../students/studentsService';
 import accountSchema from './account';
-
+import { appendLeadingZeroes } from '../../common';
 const bcrypt = require('bcryptjs');
 class AccountsController {
 
@@ -40,28 +40,19 @@ class AccountsController {
             const validResult = accountSchema.validate(req.body, { abortEarly: false });
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            const { password, role, id, birth } = req.body;
-            console.log("TCL: AccountsController -> createAccount -> birth", birth)
+            const { password, role, id } = req.body;
 
-            // Check ID có hợp lệ không
-            const result = type ? await LectureService.findBirthById(id) : await StudentService.findBirthById(id);
-
-            if (!result.recordset.length) return res.status(400).send({ message: "Please enter your ID exactly!" });
-
-            const { NGAY_SINH } = result.recordset[0];
-            
-            console.log("TCL: AccountsController -> createAccount -> NGAY_SINH", NGAY_SINH)
-           
-            const formatted_date:string = NGAY_SINH.getFullYear() + "-" + appendLeadingZeroes(NGAY_SINH.getMonth() + 1) + "-" + appendLeadingZeroes(NGAY_SINH.getDate());
-            
-            if (!type) {
-                if (formatted_date !== birth) return res.status(400).send({ message: "Can not access!" });
-            }
+            //Tìm ngày sinh đúng với id
+            const birthDB = await this.getBirth(req, res, type);
+            if (!birthDB) return res.status(400).send({ message: "Please enter exact ID" });
 
             //Check account đã tồn tại chưa
             const existedAccount = await AccountService.findById(id);
-
             if (existedAccount.recordset.length) return res.status(400).send({ message: "ID already registed" });
+
+            //Check ngày sinh có hợp lệ?
+            const isBirthValid = await this.checkBirth(req, res, birthDB);
+            if (isBirthValid) return res.status(400).send({ message: "Can not access!" });
 
             //Hash password
             const hashPassword = await bcrypt.hash(password, 12);
@@ -79,13 +70,18 @@ class AccountsController {
             res.status(500).send(error);
         }
     }
+
+    private getBirth = async (req: Request, res: Response, type: boolean) => {
+        const result = type ? await LectureService.findBirthById(req.body.id) : await StudentService.findBirthById(req.body.id);
+        if (result.recordset.length) return result.recordset[0].NGAY_SINH;
+        else return null;
+    }
+
+    private checkBirth = async (req: Request, res: Response, birthDB: Date) => {
+        const formatted_date: string = birthDB.getFullYear() + "-" + appendLeadingZeroes(birthDB.getMonth() + 1) + "-" + appendLeadingZeroes(birthDB.getDate());
+        return formatted_date !== req.body.birth;
+    }
 }
 
 export default new AccountsController();
 
-function appendLeadingZeroes(n: number) {
-    if (n <= 9) {
-        return "0" + n;
-    }
-    return n
-}
