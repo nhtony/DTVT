@@ -11,7 +11,7 @@ class OTPController {
         code: '',
         email: '',
         id: '',
-        expirationTime: 5000
+        expirationTime: 300000
     };
 
     sendOTP = async (req: Request, res: Response, next: NextFunction) => {

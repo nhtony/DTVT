@@ -4,6 +4,9 @@ import { applyMiddleware, applyRoutes } from './utils';
 import middleware from './middleware'
 import routes from './routes';
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 const sql = require('mssql');
 
 const config = {

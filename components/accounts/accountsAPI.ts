@@ -1,5 +1,5 @@
-
 import AccountsController from './accountsController';
+import { authenticate, authorize } from '../../middleware/auth';
 
 const accountRoutes = {
     getAccounts: {
@@ -25,12 +25,22 @@ const accountRoutes = {
     enableAccount: {
         path: "/accounts/enable",
         method: "put",
-        handler: AccountsController.activeAccount(true)
+        handler: [authenticate, authorize('admin'),AccountsController.activeAccount(true)]
     },
     disableAccount: {
         path: "/accounts/disable",
         method: "put",
-        handler: AccountsController.activeAccount(false)
+        handler: [authenticate, authorize('admin'),AccountsController.activeAccount(false)]
+    },
+    lectureLogin: {
+        path: "/accounts/lecture/login",
+        method: "post",
+        handler: AccountsController.login(true)
+    },
+    studentLogin: {
+        path: "/accounts/student/login",
+        method: "post",
+        handler: AccountsController.login(false)
     }
 };
 

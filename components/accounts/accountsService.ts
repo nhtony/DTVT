@@ -8,7 +8,7 @@ class AccountService implements IAccount {
     }
 
     async findById(id: string) {
-        return await sql.db.query(`SELECT ACCOUNT_ID,QUYEN,STATUS FROM ACCOUNT WHERE ACCOUNT_ID = '${id}'`);
+        return await sql.db.query(`SELECT ACCOUNT_ID,QUYEN,STATUS,PASSWORD FROM ACCOUNT WHERE ACCOUNT_ID = '${id}'`);
     }
 
     async findByIdLecture(id: string) {

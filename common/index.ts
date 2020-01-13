@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 export const generateOTP = () => {
     const digits = '0123456789';
     const otpLength = 6;
@@ -39,4 +41,9 @@ export const errorMessage = (title: string, errors: any[]) => {
         }
     });
     return errors;
+}
+
+export const signToken = (payload:any) => {
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRED_ID });
+    return token
 }

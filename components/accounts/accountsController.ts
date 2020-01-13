@@ -4,7 +4,10 @@ import LectureService from '../lectures/lecturesService';
 import StudentService from '../students/studentsService';
 import accountSchema from './account';
 import { appendLeadingZeroes } from '../../common';
+import { signToken } from '../../common';
+
 const bcrypt = require('bcryptjs');
+
 class AccountsController {
 
     getAccounts = async (req: Request, res: Response) => {
@@ -16,7 +19,7 @@ class AccountsController {
         }
     }
 
-    getAccountByID =  async (req: Request, res: Response) => {
+    getAccountByID = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
             const data = await AccountService.findById(id);
@@ -58,8 +61,8 @@ class AccountsController {
 
             //Thêm sinh viên/ giảng viên xuống DB
             const newAccount = type ?
-                await AccountService.createWithIdLecture(hashPassword, role[0], id) :
-                await AccountService.createWithIdStudent(hashPassword, role[0], id)
+                await AccountService.createWithIdLecture(hashPassword, role, id) :
+                await AccountService.createWithIdStudent(hashPassword, role, id)
 
             if (newAccount.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send({ massage: 'Successful!' });
@@ -72,15 +75,50 @@ class AccountsController {
 
     activeAccount = (isActive: boolean) => async (req: Request, res: Response) => {
         try {
-            const {id} = req.body;
+            const { id } = req.body;
             const existedAccount = await AccountService.findById(id);
-            if(!existedAccount.recordset.length) return res.status(400).send({massage:'Account not exist !'});
-            const activedAccount = isActive ? await AccountService.updateStatusById(id,'enable') : await AccountService.updateStatusById(id,'disable')
+            if (!existedAccount.recordset.length) return res.status(400).send({ massage: 'Account not exist !' });
+            const activedAccount = isActive ? await AccountService.updateStatusById(id, 'enable') : await AccountService.updateStatusById(id, 'disable')
             if (activedAccount.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send({ massage: 'Successful!' });
         } catch (error) {
             console.log("TCL: AccountsController -> activeAccount -> error", error)
             res.status(500).send(error);
+        }
+    }
+
+    login = (type: boolean) => async (req: Request, res: Response) => {
+        try {
+            const { id, password } = req.body;
+
+            const existedAccount = await AccountService.findById(id);
+
+            if (!existedAccount.recordset.length) return res.status(401).send({ message: 'Email or password is incorrect!' });
+            // so sanh password
+            const { PASSWORD, ACCOUNT_ID, QUYEN, STATUS } = existedAccount.recordset[0];
+
+            if (STATUS !== 1) return res.status(401).send({ message: 'Account has not actived' });
+
+            const isCorrect = await bcrypt.compare(password, PASSWORD);
+
+            if (!isCorrect) return res.status(401).send({ message: 'Email or password is incorrect!' });
+
+            const inforAccount = type ? await LectureService.findById(ACCOUNT_ID) : await StudentService.findById(ACCOUNT_ID);
+
+            const { HO_SINH_VIEN, TEN_SINH_VIEN, EMAIL, NGAY_SINH, MaLop } = inforAccount.recordset[0];
+
+            const profile = {
+                name: HO_SINH_VIEN + ' ' + TEN_SINH_VIEN,
+                email: EMAIL,
+                birth: NGAY_SINH,
+                classId: MaLop
+            }
+            // tao token
+            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN });
+            res.status(200).send({ data: { token, profile } });
+        } catch (error) {
+            console.log("TCL: AccountsController -> login -> error", error)
+            res.status(200).send({ massage: 'Login fail' });
         }
     }
 
