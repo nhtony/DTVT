@@ -85,7 +85,7 @@ class OTPController {
 
     activeAccount = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const actived = await AccountService.updateStatus(this.nextReq.id);
+            const actived = await AccountService.updateStatusById(this.nextReq.id,'enable');
             if (!actived.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send({ massage: 'Success!' });
         } catch (error) {

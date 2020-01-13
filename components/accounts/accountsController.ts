@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import AccountService from './accountsService';
 import LectureService from '../lectures/lecturesService';
 import StudentService from '../students/studentsService';
@@ -16,11 +16,10 @@ class AccountsController {
         }
     }
 
-    getAccountByID = (type: boolean) => async (req: Request, res: Response) => {
-
+    getAccountByID =  async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const data = type ? await AccountService.findByIdLecture(id) : await AccountService.findByIdStudent(id);
+            const data = await AccountService.findById(id);
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: module.exports.getAccountByUserName -> error", error)
@@ -67,6 +66,20 @@ class AccountsController {
 
         } catch (error) {
             console.log("TCL: module.exports.createAccount -> error", error)
+            res.status(500).send(error);
+        }
+    }
+
+    activeAccount = (isActive: boolean) => async (req: Request, res: Response) => {
+        try {
+            const {id} = req.body;
+            const existedAccount = await AccountService.findById(id);
+            if(!existedAccount.recordset.length) return res.status(400).send({massage:'Account not exist !'});
+            const activedAccount = isActive ? await AccountService.updateStatusById(id,'enable') : await AccountService.updateStatusById(id,'disable')
+            if (activedAccount.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
+            res.status(200).send({ massage: 'Successful!' });
+        } catch (error) {
+            console.log("TCL: AccountsController -> activeAccount -> error", error)
             res.status(500).send(error);
         }
     }

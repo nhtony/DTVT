@@ -7,15 +7,10 @@ const accountRoutes = {
         method: "get",
         handler: AccountsController.getAccounts
     },
-    getLectureAccounts: {
-        path: "/accounts/lecture",
+    getAccount: {
+        path: "/accounts/:id",
         method: "get",
-        handler: AccountsController.getAccountByID(true)
-    },
-    getStudentAccounts: {
-        path: "/accounts/student",
-        method: "get",
-        handler: AccountsController.getAccountByID(false)
+        handler: AccountsController.getAccountByID
     },
     createLectureAccount: {
         path: "/accounts/lecture",
@@ -26,6 +21,16 @@ const accountRoutes = {
         path: "/accounts/student",
         method: "post",
         handler: AccountsController.createAccount(false)
+    },
+    enableAccount: {
+        path: "/accounts/enable",
+        method: "put",
+        handler: AccountsController.activeAccount(true)
+    },
+    disableAccount: {
+        path: "/accounts/disable",
+        method: "put",
+        handler: AccountsController.activeAccount(false)
     }
 };
 

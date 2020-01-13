@@ -15,3 +15,28 @@ export const appendLeadingZeroes = (n: number) => {
     }
     return n
 }
+
+export const errorMessage = (title: string, errors: any[]) => {
+    errors.forEach(error => {
+        switch (error.code) {
+            case "string.base":
+                error.message = `${title} must be a string!`;
+                break;
+            case "date.base":
+                error.message = `${title} must be a date!`;
+                break;
+            case "string.empty":
+                error.message = `${title} should not be empty!`;
+                break;
+            case "string.max":
+                error.message = `${title} must be less than or equal to 10 characters!`;
+                break;
+            case "string.min":
+                error.message = `${title} must be greater than or equal to 8 characters!`;
+                break;
+            default:
+                break;
+        }
+    });
+    return errors;
+}
