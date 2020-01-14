@@ -44,4 +44,4 @@ class AccountService implements IAccount {
     };
 }
 
-export default new AccountService();
+export default AccountService;

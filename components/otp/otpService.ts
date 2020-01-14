@@ -17,4 +17,4 @@ class OTPService  {
 
 }
 
-export default new OTPService();
+export default OTPService;

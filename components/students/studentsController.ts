@@ -2,13 +2,19 @@ import { Request, Response } from "express";
 import studentSchema from './student';
 import StudentService from './studentsService';
 class StudentController {
+
+    private stundentService: StudentService;
+    
+    constructor(_studentService = new StudentService()){
+        this.stundentService = _studentService;
+    }
+    
     getStudents = async (req: Request, res: Response) => {
         try {
-            const data = await StudentService.findAll();
+            const data = await this.stundentService.findAll();
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: StudentController -> getStudents -> error", error)
-
             res.status(500).send();
         }
     }
@@ -16,7 +22,7 @@ class StudentController {
     getStudentById = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const data = await StudentService.findById(id);
+            const data = await this.stundentService.findById(id);
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: StudentController -> getStudentById -> error", error)
@@ -35,19 +41,11 @@ class StudentController {
 
             let { id, firstname, lastname, birth, email, phone, classId, groupId } = req.body;
 
-            // if (!email || !phone || !groupId) {
-            //     email = null;
-            //     phone = null;
-            //     groupId = null;
-            // }
-
-
-
             //Check lecutre đã tồn tại chưa
-            const existedStudent = await StudentService.findById(id);
+            const existedStudent = await this.stundentService.findById(id);
             if (existedStudent.recordset.length) return res.status(400).send({ message: "Student existed!" });
 
-            const newStudent = await StudentService.create(id, firstname, lastname, birth, email, phone, classId, groupId);
+            const newStudent = await this.stundentService.create(id, firstname, lastname, birth, email, phone, classId, groupId);
 
             if (newStudent.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
 
@@ -70,17 +68,11 @@ class StudentController {
 
             let { id, firstname, lastname, birth, email, phone, classId, groupId } = req.body;
 
-            // if (!email || !phone || !groupId) {
-            //     email = null;
-            //     phone = null;
-            //     groupId = null;
-            // }
-
             //Check lecutre đã tồn tại chưa
-            const existedStudent = await StudentService.findById(id);
+            const existedStudent = await this.stundentService.findById(id);
             if (!existedStudent.recordset.length) return res.status(400).send({ message: "Student not exist!" });
 
-            const updatedStudent = await StudentService.update(id, firstname, lastname, birth, email, phone, classId, groupId);
+            const updatedStudent = await this.stundentService.update(id, firstname, lastname, birth, email, phone, classId, groupId);
 
             if (updatedStudent.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
 
@@ -88,7 +80,6 @@ class StudentController {
 
         } catch (error) {
             console.log("TCL: StudentController -> updateStudent -> error", error)
-
             res.status(500).send();
         }
     }
@@ -96,7 +87,7 @@ class StudentController {
     deleteStudent = async (req: Request, res: Response) => {
         try {
             const { id } = req.body;
-            const deletedStudent = await StudentService.delete(id);
+            const deletedStudent = await this.stundentService.delete(id);
             if (!deletedStudent.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send({ massage: 'Success!' });
         } catch (error) {

@@ -10,9 +10,6 @@ class LectureService implements ILecture {
         return await sql.db.query(`SELECT * FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}'`);
     }
 
-    async findBirthById(id: string) {
-        return await sql.db.query(`SELECT NGAY_SINH FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}'`);
-    }
 
     async create(id: string, firstname: string, lastname: string, email: string, phone: string, address: string, khoaId: string) {
         return await sql.db.query(`INSERT INTO GIANG_VIEN (MA_GIANG_VIEN,HO_GIANG_VIEN,TEN_GIANG_VIEN,EMAIL,DIEN_THOAI,DIA_CHI,MA_KHOA) VALUES ('${id}','${firstname}','${lastname}','${email}','${phone}','${address}','${khoaId}')`);
@@ -26,4 +23,4 @@ class LectureService implements ILecture {
         return await sql.db.query(`DELETE FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}' `);
     }
 }
-export default new LectureService();
+export default  LectureService;

@@ -3,7 +3,7 @@ import OTPService from './otpService';
 import AccountService from '../accounts/accountsService';
 import StudentService from '../students/studentsService';
 import { sendEmail } from '../../services/mailer';
-import {generateOTP} from '../../common/index';
+import { generateOTP } from '../../common/index';
 
 class OTPController {
 
@@ -14,11 +14,21 @@ class OTPController {
         expirationTime: 300000
     };
 
+    private accountService: AccountService;
+    private studentService: StudentService;
+    private otpService: OTPService;
+
+    constructor(_accountService = new AccountService(),_studentService = new StudentService(),_otpService = new OTPService()) {
+        this.accountService = _accountService;
+        this.otpService = _otpService;
+        this.studentService = _studentService;
+    }
+
     sendOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { email, id } = req.body;
 
-            const existedAccount = await AccountService.findById(id);
+            const existedAccount = await this.accountService.findById(id);
 
             const { ACCOUNT_ID, STATUS } = existedAccount.recordset[0] || {};
 
@@ -46,7 +56,7 @@ class OTPController {
 
     saveOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const updateOTP = await OTPService.update(this.nextReq.code, this.nextReq.email, this.nextReq.id);
+            const updateOTP = await this.otpService.update(this.nextReq.code, this.nextReq.email, this.nextReq.id);
             if (!updateOTP.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send(
                 {
@@ -63,20 +73,14 @@ class OTPController {
     verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { otp, id } = req.body;
-            const result = await OTPService.find(otp, id);
-
+            const result = await this.otpService.find(otp, id);
             if (!result.recordset.length) return res.status(500).send({ massage: "OTP was expired" });
-
             const { EMAIL } = result.recordset[0];
-
-            const newEmail = await StudentService.updateEmailById(EMAIL, id);
-
+            const newEmail = await this.studentService.updateEmailById(EMAIL, id);
             if (!newEmail.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
-
             this.nextReq.code = otp;
             this.nextReq.id = id;
             next();
-
         } catch (error) {
             console.log("TCL: module.exports.verifyOTP -> error", error)
             res.status(500).send();
@@ -85,7 +89,7 @@ class OTPController {
 
     activeAccount = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const actived = await AccountService.updateStatusById(this.nextReq.id,'enable');
+            const actived = await this.accountService.updateStatusById(this.nextReq.id, 'enable');
             if (!actived.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send({ massage: 'Success!' });
         } catch (error) {
@@ -95,7 +99,7 @@ class OTPController {
 
     deleteOTP = async (req: Request, res: Response) => {
         try {
-            const deletedOTP = await OTPService.delete(this.nextReq.code);
+            const deletedOTP = await this.otpService.delete(this.nextReq.code);
             if (!deletedOTP.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send({ massage: 'Success!' });
         } catch (error) {
@@ -107,7 +111,7 @@ class OTPController {
     private autoDeleteOTP = () => {
         setTimeout(async () => {
             try {
-                const deletedOTP = await OTPService.delete(this.nextReq.code);
+                const deletedOTP = await this.otpService.delete(this.nextReq.code);
                 if (deletedOTP.rowsAffected.length) {
                     console.log('deleted OTP');
                     return;

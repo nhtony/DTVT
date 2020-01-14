@@ -12,30 +12,35 @@ const accountRoutes = {
         method: "get",
         handler: AccountsController.getAccountByID
     },
+    enableAccount: {
+        path: "/accounts/enable",
+        method: "put",
+        handler: [authenticate, authorize(["admin", "lecture"]), AccountsController.activeAccount(true)]
+    },
+    disableAccount: {
+        path: "/accounts/disable",
+        method: "put",
+        handler: [authenticate, authorize(["admin", "lecture"]), AccountsController.activeAccount(false)]
+    },
     createLectureAccount: {
         path: "/accounts/lecture",
         method: "post",
         handler: AccountsController.createAccount(true)
+    },
+    lectureLogin: {
+        path: "/accounts/lecture/login",
+        method: "post",
+        handler: AccountsController.login(true)
     },
     createStudentAccount: {
         path: "/accounts/student",
         method: "post",
         handler: AccountsController.createAccount(false)
     },
-    enableAccount: {
-        path: "/accounts/enable",
+    setStudentRole: {
+        path: "/accounts/student/set/role",
         method: "put",
-        handler: [authenticate, authorize('admin'),AccountsController.activeAccount(true)]
-    },
-    disableAccount: {
-        path: "/accounts/disable",
-        method: "put",
-        handler: [authenticate, authorize('admin'),AccountsController.activeAccount(false)]
-    },
-    lectureLogin: {
-        path: "/accounts/lecture/login",
-        method: "post",
-        handler: AccountsController.login(true)
+        handler: [authenticate, authorize(['admin','lecture']), AccountsController.setStudentRole]
     },
     studentLogin: {
         path: "/accounts/student/login",

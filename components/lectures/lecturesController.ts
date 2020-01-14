@@ -3,9 +3,16 @@ import lectureSchema from './lecture';
 import LectureSevice from './lecturesService';
 
 class LecturesController {
+
+    private lectureService: LectureSevice;
+
+    constructor(_lectureService = new LectureSevice()) {
+        this.lectureService = _lectureService;
+    }
+
     getLeclures = async (req: Request, res: Response) => {
         try {
-            const data = await LectureSevice.findAll();
+            const data = await this.lectureService.findAll();
             res.status(200).send(data.recordset);
         } catch (error) {
             res.status(500).send();
@@ -15,7 +22,7 @@ class LecturesController {
     getLeclureByID = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const data = await LectureSevice.findById(id);
+            const data = await this.lectureService.findById(id);
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: LecturesController -> getLeclureByID -> error", error)
@@ -34,12 +41,12 @@ class LecturesController {
             let { id, firstname, lastname, email, phone, address, khoaId } = req.body;
 
             if (khoaId !== 1) khoaId = 1;
-           
+
             //Check lecutre đã tồn tại chưa
-            const existedLecture = await LectureSevice.findById(id);
+            const existedLecture = await this.lectureService.findById(id);
             if (existedLecture.recordset.length) return res.status(400).send({ message: "Lecture existed!" });
 
-            const newLecture = await LectureSevice.create(id, firstname, lastname, email, phone, address, khoaId);
+            const newLecture = await this.lectureService.create(id, firstname, lastname, email, phone, address, khoaId);
 
             if (newLecture.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
 
@@ -62,12 +69,12 @@ class LecturesController {
             let { id, firstname, lastname, email, phone, address, khoaId } = req.body;
 
             if (khoaId !== 1) khoaId = 1;
-           
+
             //Check lecutre đã tồn tại chưa
-            const existedLecture = await LectureSevice.findById(id);
+            const existedLecture = await this.lectureService.findById(id);
             if (!existedLecture.recordset.length) return res.status(400).send({ message: "Lecture not exist!" });
 
-            const updatedLecture = await LectureSevice.update(id, firstname, lastname, email, phone, address, khoaId);
+            const updatedLecture = await this.lectureService.update(id, firstname, lastname, email, phone, address, khoaId);
 
             if (updatedLecture.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
 
@@ -82,7 +89,7 @@ class LecturesController {
     deleteLecture = async (req: Request, res: Response) => {
         try {
             const { id } = req.body;
-            const deletedLecture = await LectureSevice.delete(id);
+            const deletedLecture = await this.lectureService.delete(id);
             if (!deletedLecture.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
             res.status(200).send({ massage: 'Success!' });
         } catch (error) {

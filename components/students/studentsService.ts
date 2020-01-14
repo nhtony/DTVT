@@ -28,6 +28,9 @@ class StudentService implements IStudent {
         return await sql.db.query(`UPDATE SINH_VIEN SET EMAIL = '${email}'  WHERE MA_SINH_VIEN = '${id}'`);
     }
 
+    async updateRoleById(lead: number, id: string) {
+        return await sql.db.query(`UPDATE SINH_VIEN SET LEAD = '${lead}'  WHERE MA_SINH_VIEN = '${id}'`);
+    }
 
     async delete(id: string) {
         return await sql.db.query(`DELETE FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}' `);
@@ -36,4 +39,4 @@ class StudentService implements IStudent {
 
 }
 
-export default new StudentService();
+export default StudentService;

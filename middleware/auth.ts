@@ -4,8 +4,11 @@ import AccountService from '../components/accounts/accountsService';
 
 let nextReq = {
     id: '',
-    role: ''
+    role: '',
+    status: null
 };
+
+const accountService = new AccountService();
 
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
     const tokenStr = req.get('Authorization');
@@ -14,13 +17,15 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     try {
         //get token from request's header
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        
-        const existedAccount = await AccountService.findById(decodedToken.accountId);
 
-        if (existedAccount.recordset.length) return res.status(401).send({ message: "Permission Deny!" });
+        const existedAccount = await accountService.findById(decodedToken.accountId);
+       
+        if (!existedAccount.recordset.length) return res.status(401).send({ message: "Permission Deny!" });
 
         nextReq.id = decodedToken.accountId;
         nextReq.role = decodedToken.role;
+        nextReq.status = decodedToken.status;
+
         next();
 
     } catch (error) {
@@ -29,23 +34,15 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
-export const authorize = (accessRoles: string) => {
+export const authorize = (accessRoles: string[]) => {
     return async (req: Request, res: Response, next: NextFunction) => {
-        let canAccess = false;
-        switch (accessRoles) {
-            case 'student':
-                canAccess = true;
-                break;
-            case 'lecture':
-                canAccess = true;
-                break;
-            case 'admin':
-                canAccess = true;
-                break;
-            default:
-                break;
+        if (nextReq.status === 1) {
+            const canAccess = accessRoles.includes(nextReq.role);
+            if (!canAccess) return res.status(401).send({ message: "Permission Deny!" });
+            next();
         }
-        if (!canAccess) return res.status(401).send({ message: "Permission Deny!" });
-        next();
+        else {
+            return res.status(401).send({ message: "Account is not active!" });
+        }
     }
 }
