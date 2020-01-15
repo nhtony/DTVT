@@ -42,7 +42,7 @@ export const authorize = (accessRoles: string[]) => {
             next();
         }
         else {
-            return res.status(401).send({ message: "Account is not active!" });
+            return res.status(401).send({ message: "authorize: account not active!" });
         }
     }
 }

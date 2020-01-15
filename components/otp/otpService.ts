@@ -1,6 +1,6 @@
 
 const sql = require('mssql');
-class OTPService  {
+class OTPService {
 
     async update(code: string, email: string, ms: string) {
         return await sql.db.query(`UPDATE OTP SET CODE='${code}',EMAIL='${email}' WHERE MA_SO='${ms}' IF @@ROWCOUNT=0 INSERT INTO OTP (MA_SO,CODE,EMAIL) VALUES ('${ms}','${code}','${email}')`);

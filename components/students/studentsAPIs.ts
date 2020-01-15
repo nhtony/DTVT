@@ -1,4 +1,4 @@
-
+import { authenticate, authorize } from '../../middleware/auth';
 import StudentController from './studentsController';
 
 const studentRoutes = {
@@ -15,17 +15,17 @@ const studentRoutes = {
     createStudent: {
         path: "/students",
         method: "post",
-        handler: StudentController.createStudent
+        handler: [authenticate, authorize(['admin']), StudentController.createStudent]
     },
     updateStudent: {
         path: "/students",
         method: "put",
-        handler: StudentController.updateStudent
+        handler: [authenticate, authorize(['admin']), StudentController.updateStudent]
     },
     deleteStudent: {
         path: "/students",
         method: "delete",
-        handler: StudentController.deleteStudent
+        handler: [authenticate, authorize(['admin']), StudentController.deleteStudent]
     }
 };
 

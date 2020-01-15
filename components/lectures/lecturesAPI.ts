@@ -1,5 +1,5 @@
-
 import LectureController from './lecturesController';
+import { authenticate, authorize } from '../../middleware/auth';
 
 const lectureRoutes = {
     getLecutures: {
@@ -15,17 +15,17 @@ const lectureRoutes = {
     createLecture: {
         path: "/lectures",
         method: "post",
-        handler: LectureController.createLecture
+        handler: [authenticate, authorize(["admin"]),LectureController.createLecture]
     },
     updateLecture: {
         path: "/lectures",
         method: "put",
-        handler: LectureController.updateLecture
+        handler: [authenticate, authorize(["admin"]),LectureController.updateLecture]
     },
     deleteLecture: {
         path: "/lectures",
         method: "delete",
-        handler: LectureController.deleteLecture
+        handler: [authenticate, authorize(["admin"]),LectureController.deleteLecture]
     }
 };
 

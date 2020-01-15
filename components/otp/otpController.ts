@@ -73,8 +73,14 @@ class OTPController {
     verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { otp, id } = req.body;
+
+            const existedAccount = await this.accountService.findById(id);
+            const { STATUS } = existedAccount.recordset[0];
+            if (STATUS === 1) return res.status(400).send({ message: "Account is actived" });
+
             const result = await this.otpService.find(otp, id);
             if (!result.recordset.length) return res.status(500).send({ massage: "OTP was expired" });
+            
             const { EMAIL } = result.recordset[0];
             const newEmail = await this.studentService.updateEmailById(EMAIL, id);
             if (!newEmail.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
@@ -91,7 +97,7 @@ class OTPController {
         try {
             const actived = await this.accountService.updateStatusById(this.nextReq.id, 'enable');
             if (!actived.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
-            res.status(200).send({ massage: 'Success!' });
+            next();
         } catch (error) {
             console.log("TCL: module.exports.activeAccount -> error", error);
         }

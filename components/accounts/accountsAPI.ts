@@ -15,12 +15,12 @@ const accountRoutes = {
     enableAccount: {
         path: "/accounts/enable",
         method: "put",
-        handler: [authenticate, authorize(["admin", "lecture"]), AccountsController.activeAccount(true)]
+        handler: [authenticate, authorize(["admin"]), AccountsController.activeAccount(true)]
     },
     disableAccount: {
         path: "/accounts/disable",
         method: "put",
-        handler: [authenticate, authorize(["admin", "lecture"]), AccountsController.activeAccount(false)]
+        handler: [authenticate, authorize(["admin"]),AccountsController.activeAccount(false)]
     },
     createLectureAccount: {
         path: "/accounts/lecture",
@@ -38,14 +38,19 @@ const accountRoutes = {
         handler: AccountsController.createAccount(false)
     },
     setStudentRole: {
-        path: "/accounts/student/set/role",
+        path: "/accounts/student/role/set",
         method: "put",
-        handler: [authenticate, authorize(['admin','lecture']), AccountsController.setStudentRole]
+        handler: [authenticate, authorize(['admin', 'lecture']), AccountsController.setStudentRole]
     },
     studentLogin: {
         path: "/accounts/student/login",
         method: "post",
         handler: AccountsController.login(false)
+    },
+    resetPassword: {
+        path: "/accounts/password/reset",
+        method: "post",
+        handler: [authenticate, authorize(['admin', 'lecture', 'student']), AccountsController.resetPassword]
     }
 };
 

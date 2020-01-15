@@ -3,20 +3,19 @@ import express from "express";
 import { applyMiddleware, applyRoutes } from './utils';
 import middleware from './middleware'
 import routes from './routes';
-
 const dotenv = require('dotenv');
-dotenv.config();
-
 const sql = require('mssql');
 
-const config = {
-  user: 'honhathao',
-  password: '123456',
+dotenv.config();
+
+const configDB = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
   server: 'localhost\\MSSQLSERVERHAO',
-  database: 'KLTNDB',
+  database: process.env.DB_NAME
 }
 
-sql.connect(config)
+sql.connect(configDB)
   .then((pool: any) => {
     sql.db = pool;
   })

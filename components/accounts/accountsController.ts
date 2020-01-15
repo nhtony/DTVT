@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import AccountService from './accountsService';
 import LectureService from '../lectures/lecturesService';
 import StudentService from '../students/studentsService';
-import accountSchema from './account';
+import { accountSchema, accountPasswordSchema } from './account';
 import { appendLeadingZeroes } from '../../common';
 import { signToken } from '../../common';
 
@@ -41,7 +41,6 @@ class AccountsController {
     }
 
     createAccount = (type: boolean) => async (req: Request, res: Response) => {
-
         /**
          * type = true => giảng viên
          * type = false => sinh viên 
@@ -59,7 +58,7 @@ class AccountsController {
             const isAllow = roles.includes(role);
             if (!isAllow) return res.status(400).send({ message: "Please enter exact role" });
 
-            role = type ? 'lecture' : 'student'; // Bắt buộc student là quyền student, cũng như lecture
+            if(!type) role = 'student'; // Bắt buộc student luôn là quyền student
 
             //Tìm ngày sinh đúng với id
             const birthDB = await this.getBirth(req, res, type);
@@ -130,7 +129,7 @@ class AccountsController {
 
             if (STATUS !== 1) return res.status(401).send({ message: 'Account has not actived' });
 
-            const isCorrect = await bcrypt.compare(password, PASSWORD);
+            const isCorrect = await bcrypt.compare(password, PASSWORD); 
 
             if (!isCorrect) return res.status(401).send({ message: 'Email or password is incorrect!' });
 
@@ -154,6 +153,39 @@ class AccountsController {
         } catch (error) {
             console.log("TCL: AccountsController -> login -> error", error)
             res.status(200).send({ massage: 'Login fail' });
+        }
+    }
+
+    resetPassword = async (req: Request, res: Response) => {
+        try {
+
+            //Validation
+            const validResult = accountPasswordSchema.validate(req.body, { abortEarly: false });
+            if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
+
+            const { id, currentPassword, newPassword } = req.body;
+
+            const existedAccount = await this.accountService.findById(id);
+          
+            if (existedAccount.recordset.length === 0) return res.status(400).send({ massage: 'Permision Deny!' });
+
+            const { PASSWORD } = existedAccount.recordset[0];
+
+            const isCorrect = await bcrypt.compare(currentPassword, PASSWORD);
+
+            if (!isCorrect) return res.status(401).send({ message: 'Password is incorrect!' });
+
+            const newHashPassword = await bcrypt.hash(newPassword, 12);
+
+            const updatedPassword = await this.accountService.updatePassword(id, newHashPassword);
+            
+            if (updatedPassword.rowsAffected.length === 0) return res.status(500).send({ massage: 'Update fail!' });
+
+            return res.status(500).send({ massage: 'Update successfully!' });
+
+        } catch (error) {
+            console.log("TCL: AccountsController -> resetPassword -> error", error)
+            res.status(500).send({ massage: 'Update fail!' });
         }
     }
 

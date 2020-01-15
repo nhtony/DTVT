@@ -28,20 +28,15 @@ class AccountService implements IAccount {
     }
 
     async updateStatusById(id: string, status: string) {
-        let stt = null;
-        switch (status) {
-            case 'enable':
-                stt = 1;
-                break;
-            case 'disable':
-                stt = 0;
-                break;
-            default:
-                stt = 0;
-                break;
-        }
+        let stt:number = 0;
+        if(status === 'enable') stt = 1;
+        else if(status === 'disable') stt= 0;
         return await sql.db.query(`UPDATE ACCOUNT SET STATUS = '${stt}' WHERE MA_SINH_VIEN = '${id}' OR MA_GIANG_VIEN = '${id}'`);
     };
+
+    async updatePassword(id: string, password: string) {
+        return await sql.db.query(`UPDATE ACCOUNT SET PASSWORD = '${password}' WHERE MA_SINH_VIEN = '${id}' OR MA_GIANG_VIEN = '${id}'`);
+    }
 }
 
 export default AccountService;
