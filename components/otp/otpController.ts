@@ -42,7 +42,7 @@ class OTPController {
 
             const sentEmail = await sendEmail(email, otp);
 
-            if (!sentEmail) return res.status(500).send({ massage: "Fail to send mail!" });
+            if (!sentEmail) return res.status(500).send({ message: "Fail to send mail!" });
 
             this.nextReq.code = otp;
             this.nextReq.email = email;
@@ -59,10 +59,10 @@ class OTPController {
     saveOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const updateOTP = await this.otpService.update(this.nextReq.code, this.nextReq.email, this.nextReq.id);
-            if (!updateOTP.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
+            if (!updateOTP.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send(
                 {
-                    massage: 'Success!',
+                    message: 'Success!',
                     data: { expirationTime: this.nextReq.expirationTime }
                 });
             this.autoDeleteOTP();
@@ -81,11 +81,11 @@ class OTPController {
             if (STATUS === 1) return res.status(400).send({ message: "Account is actived" });
 
             const result = await this.otpService.find(otp, id);
-            if (!result.recordset.length) return res.status(500).send({ massage: "OTP was expired" });
+            if (!result.recordset.length) return res.status(500).send({ message: "OTP was expired" });
 
             const { EMAIL } = result.recordset[0];
             const newEmail = await this.studentService.updateEmailById(EMAIL, id);
-            if (!newEmail.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
+            if (!newEmail.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
             this.nextReq.code = otp;
             this.nextReq.id = id;
             next();
@@ -98,7 +98,7 @@ class OTPController {
     activeAccount = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const actived = await this.accountService.updateStatusById(this.nextReq.id, 'enable');
-            if (!actived.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
+            if (!actived.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
             next();
         } catch (error) {
             console.log("TCL: module.exports.activeAccount -> error", error);
@@ -108,8 +108,8 @@ class OTPController {
     deleteOTP = async (req: Request, res: Response) => {
         try {
             const deletedOTP = await this.otpService.delete(this.nextReq.code);
-            if (!deletedOTP.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
-            res.status(200).send({ massage: 'Success!' });
+            if (!deletedOTP.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
+            res.status(200).send({ message: 'Success!' });
         } catch (error) {
             console.log("TCL: module.exports.deleteOTP -> error", error)
             res.status(500).send();

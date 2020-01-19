@@ -44,9 +44,9 @@ class SubjectsController {
 
             const newSubject = await this.subjectService.create(subjectId, subjectName, subjectNumber, subjectRequired, majorId);
 
-            if (newSubject.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
+            if (newSubject.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ massage: 'Successful!' });
+            res.status(200).send({ message: 'Successful!' });
 
         } catch (error) {
             console.log("TCL: SubjectsController -> createLecture -> error", error)
@@ -71,9 +71,9 @@ class SubjectsController {
 
             const updatedLecture = await this.subjectService.update(subjectId, subjectName, subjectNumber, subjectRequired, majorId);
 
-            if (updatedLecture.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
+            if (updatedLecture.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ massage: 'Successful!' });
+            res.status(200).send({ message: 'Successful!' });
 
         } catch (error) {
             console.log("TCL: SubjectsController -> updateLecture -> error", error)
@@ -86,9 +86,9 @@ class SubjectsController {
             const { id } = req.body;
             const deletedSubject = await this.subjectService.delete(id);
 
-            if (!deletedSubject.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
+            if (!deletedSubject.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ massage: 'Success!' });
+            res.status(200).send({ message: 'Success!' });
 
         } catch (error) {
             console.log("TCL: SubjectsController -> deleteLecture -> error", error)

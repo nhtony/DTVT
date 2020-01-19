@@ -45,9 +45,9 @@ class StudentController {
 
             const newStudent = await this.stundentService.create(id, firstname, lastname, birth, email, phone, classId, groupId);
 
-            if (newStudent.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
+            if (newStudent.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ massage: 'Successful!' });
+            res.status(200).send({ message: 'Successful!' });
 
         } catch (error) {
             console.log("TCL: StudentController -> createStudent -> error", error)
@@ -72,9 +72,9 @@ class StudentController {
 
             const updatedStudent = await this.stundentService.update(id, firstname, lastname, birth, email, phone, classId, groupId);
 
-            if (updatedStudent.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
+            if (updatedStudent.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ massage: 'Successful!' });
+            res.status(200).send({ message: 'Successful!' });
 
         } catch (error) {
             console.log("TCL: StudentController -> updateStudent -> error", error)
@@ -86,8 +86,8 @@ class StudentController {
         try {
             const { id } = req.body;
             const deletedStudent = await this.stundentService.delete(id);
-            if (!deletedStudent.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
-            res.status(200).send({ massage: 'Success!' });
+            if (!deletedStudent.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
+            res.status(200).send({ message: 'Success!' });
         } catch (error) {
             console.log("TCL: StudentController -> deleteStudent -> error", error)
             res.status(500).send();

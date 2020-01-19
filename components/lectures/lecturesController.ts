@@ -46,9 +46,9 @@ class LecturesController {
 
             const newLecture = await this.lectureService.create(id, firstname, lastname, email, phone, address, khoaId);
 
-            if (newLecture.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
+            if (newLecture.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ massage: 'Successful!' });
+            res.status(200).send({ message: 'Successful!' });
 
         } catch (error) {
             console.log("TCL: LecturesController -> getLeclureByID -> error", error)
@@ -74,9 +74,9 @@ class LecturesController {
 
             const updatedLecture = await this.lectureService.update(id, firstname, lastname, email, phone, address, khoaId);
 
-            if (updatedLecture.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
+            if (updatedLecture.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ massage: 'Successful!' });
+            res.status(200).send({ message: 'Successful!' });
 
         } catch (error) {
             console.log("TCL: LecturesController -> updateLecture -> error", error)
@@ -88,8 +88,8 @@ class LecturesController {
         try {
             const { id } = req.body;
             const deletedLecture = await this.lectureService.delete(id);
-            if (!deletedLecture.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
-            res.status(200).send({ massage: 'Success!' });
+            if (!deletedLecture.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
+            res.status(200).send({ message: 'Success!' });
         } catch (error) {
             console.log("TCL: LecturesController -> deleteLecture -> error", error);
             res.status(500).send();

@@ -78,8 +78,8 @@ class AccountsController {
                 await this.accountService.createWithIdLecture(hashPassword, role, id) :
                 await this.accountService.createWithIdStudent(hashPassword, role, id)
 
-            if (newAccount.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
-            res.status(200).send({ massage: 'Successful!' });
+            if (newAccount.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            res.status(200).send({ message: 'Successful!' });
 
         } catch (error) {
             console.log("TCL: module.exports.createAccount -> error", error)
@@ -91,10 +91,10 @@ class AccountsController {
         try {
             const { id } = req.body;
             const existedAccount = await this.accountService.findById(id);
-            if (!existedAccount.recordset.length) return res.status(400).send({ massage: 'Account not exist !' });
+            if (!existedAccount.recordset.length) return res.status(400).send({ message: 'Account not exist !' });
             const activedAccount = isActive ? await this.accountService.updateStatusById(id, 'enable') : await this.accountService.updateStatusById(id, 'disable');
-            if (activedAccount.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
-            res.status(200).send({ massage: 'Successful!' });
+            if (activedAccount.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            res.status(200).send({ message: 'Successful!' });
         } catch (error) {
             console.log("TCL: AccountsController -> activeAccount -> error", error)
             res.status(500).send(error);
@@ -105,10 +105,10 @@ class AccountsController {
         try {
             const { id } = req.body;
             const existedAccount = await this.accountService.findById(id);
-            if (!existedAccount.recordset.length) return res.status(400).send({ massage: 'Account not exist !' });
+            if (!existedAccount.recordset.length) return res.status(400).send({ message: 'Account not exist !' });
             const updateRole = await this.studentService.updateRoleById(1, id);
-            if (updateRole.rowsAffected.length === 0) return res.status(500).send({ massage: 'Fail!' });
-            res.status(200).send({ massage: 'Successful!' });
+            if (updateRole.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            res.status(200).send({ message: 'Successful!' });
         } catch (error) {
             console.log("TCL: AccountsController -> setStudentRole -> error", error)
             res.status(500).send(error);
@@ -150,7 +150,7 @@ class AccountsController {
             res.status(200).send({ data: { token, profile } });
         } catch (error) {
             console.log("TCL: AccountsController -> login -> error", error)
-            res.status(200).send({ massage: 'Login fail' });
+            res.status(200).send({ message: 'Login fail' });
         }
     }
 
@@ -165,7 +165,7 @@ class AccountsController {
 
             const existedAccount = await this.accountService.findById(id);
 
-            if (existedAccount.recordset.length === 0) return res.status(400).send({ massage: 'Permision Deny!' });
+            if (existedAccount.recordset.length === 0) return res.status(400).send({ message: 'Permision Deny!' });
 
             const { PASSWORD } = existedAccount.recordset[0];
 
@@ -177,13 +177,13 @@ class AccountsController {
 
             const updatedPassword = await this.accountService.updatePassword(id, newHashPassword);
 
-            if (updatedPassword.rowsAffected.length === 0) return res.status(500).send({ massage: 'Update fail!' });
+            if (updatedPassword.rowsAffected.length === 0) return res.status(500).send({ message: 'Update fail!' });
 
-            return res.status(500).send({ massage: 'Update successfully!' });
+            return res.status(500).send({ message: 'Update successfully!' });
 
         } catch (error) {
             console.log("TCL: AccountsController -> resetPassword -> error", error)
-            res.status(500).send({ massage: 'Update fail!' });
+            res.status(500).send({ message: 'Update fail!' });
         }
     }
 
