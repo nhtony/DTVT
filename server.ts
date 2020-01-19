@@ -3,7 +3,7 @@ import express from "express";
 import { applyMiddleware, applyRoutes } from './utils';
 import middleware from './middleware'
 import routes from './routes';
-import errorHandlers from "./middleware/errorHandlers";
+// import errorHandlers from "./middleware/errorHandlers";
 const dotenv = require('dotenv');
 const sql = require('mssql');
 
@@ -40,7 +40,7 @@ const router = express();
 
 applyMiddleware(middleware, router);
 applyRoutes(routes, router);
-applyMiddleware(errorHandlers, router);
+// applyMiddleware(errorHandlers, router);
 
 const { PORT = 5000 } = process.env;
 const server = http.createServer(router);

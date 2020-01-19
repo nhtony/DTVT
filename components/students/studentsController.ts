@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { HTTP400Error, HTTP404Error } from "../../utils/httpErrors";
+// import { HTTP400Error, HTTP404Error } from "../../utils/httpErrors";
 import { Controller } from '../../DI/Controller';
 import studentSchema from './student';
 import StudentService from './studentsService';
@@ -12,9 +12,7 @@ class StudentController {
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: StudentController -> getStudents -> error", error)
-            res.status(200).send();
-            // let err = new HTTP404Error();
-            // throw err;
+            res.status(500).send();
         }
     }
 

@@ -15,7 +15,7 @@ class AccountsController {
         protected accountService: AccountService,
         protected lectureService: LectureService,
         protected studentService: StudentService
-    ) {}
+    ) { }
 
     getAccounts = async (req: Request, res: Response) => {
         try {
@@ -79,7 +79,7 @@ class AccountsController {
                 await this.accountService.createWithIdStudent(hashPassword, role, id)
 
             if (newAccount.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
-            res.status(200).send({ message: 'Successful!' });
+            res.status(200).send({ message: 'Successful!', id });
 
         } catch (error) {
             console.log("TCL: module.exports.createAccount -> error", error)
@@ -94,7 +94,7 @@ class AccountsController {
             if (!existedAccount.recordset.length) return res.status(400).send({ message: 'Account not exist !' });
             const activedAccount = isActive ? await this.accountService.updateStatusById(id, 'enable') : await this.accountService.updateStatusById(id, 'disable');
             if (activedAccount.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
-            res.status(200).send({ message: 'Successful!' });
+            res.status(200).send({ message: 'Successful!', id });
         } catch (error) {
             console.log("TCL: AccountsController -> activeAccount -> error", error)
             res.status(500).send(error);
@@ -147,7 +147,7 @@ class AccountsController {
             }
             // tao token
             const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS });
-            res.status(200).send({ data: { token, profile } });
+            res.status(200).send({ token, profile });
         } catch (error) {
             console.log("TCL: AccountsController -> login -> error", error)
             res.status(200).send({ message: 'Login fail' });

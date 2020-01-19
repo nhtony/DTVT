@@ -16,7 +16,10 @@ class OTPController {
         expirationTime: 300000
     };
 
-    constructor(protected accountService: AccountService, protected studentService: StudentService, protected otpService: OTPService) { }
+    constructor(
+        protected accountService: AccountService, 
+        protected studentService: StudentService, 
+        protected otpService: OTPService) { }
 
     sendOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
