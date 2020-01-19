@@ -22,7 +22,7 @@ dotenv.config();
 const configDB = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  server: 'localhost\\MSSQLSERVERHAO',
+  server: 'localhost\\MSSQLSERVER',
   database: process.env.DB_NAME
 }
 
