@@ -1,13 +1,18 @@
 const sql = require('mssql');
 import ILecture from './lecturesBase';
+import { Service } from "../../DI/ServiceDecorator";
+@Service()
 class LectureService implements ILecture {
-
     async findAll() {
         return await sql.db.query('SELECT * FROM GIANG_VIEN');
     }
 
     async findById(id: string) {
         return await sql.db.query(`SELECT * FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}'`);
+    }
+
+    async findEmailById(id: string) {
+        return await sql.db.query(`SELECT EMAIL FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}'`);
     }
 
 
@@ -23,4 +28,4 @@ class LectureService implements ILecture {
         return await sql.db.query(`DELETE FROM GIANG_VIEN WHERE MA_GIANG_VIEN = '${id}' `);
     }
 }
-export default  LectureService;
+export default LectureService;

@@ -1,6 +1,8 @@
 
 const sql = require('mssql');
 import IStudent from './studentsBase';
+import {Service} from "../../DI/ServiceDecorator";
+@Service()
 class StudentService implements IStudent {
 
     async findAll() {
@@ -10,6 +12,11 @@ class StudentService implements IStudent {
     async findById(id: string) {
         return await sql.db.query(`SELECT * FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`);
     }
+
+    async findEmailById(id: string) {
+        return await sql.db.query(`SELECT EMAIL FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`);
+    }
+
 
     async findBirthById(id: string) {
         return await sql.db.query(`SELECT NGAY_SINH FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`);
@@ -35,8 +42,6 @@ class StudentService implements IStudent {
     async delete(id: string) {
         return await sql.db.query(`DELETE FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}' `);
     }
-
-
 }
 
 export default StudentService;

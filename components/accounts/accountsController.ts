@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Controller } from "../../DI/Controller";
 import AccountService from './accountsService';
 import LectureService from '../lectures/lecturesService';
 import StudentService from '../students/studentsService';
@@ -7,24 +8,21 @@ import { appendLeadingZeroes } from '../../common';
 import { signToken } from '../../common';
 
 const bcrypt = require('bcryptjs');
-
+@Controller()
 class AccountsController {
 
-    private accountService: AccountService;
-    private lectureService: LectureService;
-    private studentService: StudentService;
-
-    constructor(_accountService = new AccountService(), _lectureService = new LectureService(), _studentService = new StudentService()) {
-        this.lectureService = _lectureService;
-        this.accountService = _accountService;
-        this.studentService = _studentService;
-    }
+    constructor(
+        protected accountService: AccountService,
+        protected lectureService: LectureService,
+        protected studentService: StudentService
+    ) {}
 
     getAccounts = async (req: Request, res: Response) => {
         try {
             const data = await this.accountService.findAll();
             res.status(200).send(data.recordset);
         } catch (error) {
+            console.log("TCL: AccountsController -> getAccounts -> error", error)
             res.status(500).send();
         }
     }
@@ -58,7 +56,7 @@ class AccountsController {
             const isAllow = roles.includes(role);
             if (!isAllow) return res.status(400).send({ message: "Please enter exact role" });
 
-            if(!type) role = 'student'; // Bắt buộc student luôn là quyền student
+            if (!type) role = 'student'; // Bắt buộc student luôn là quyền student
 
             //Tìm ngày sinh đúng với id
             const birthDB = await this.getBirth(req, res, type);
@@ -129,7 +127,7 @@ class AccountsController {
 
             if (STATUS !== 1) return res.status(401).send({ message: 'Account has not actived' });
 
-            const isCorrect = await bcrypt.compare(password, PASSWORD); 
+            const isCorrect = await bcrypt.compare(password, PASSWORD);
 
             if (!isCorrect) return res.status(401).send({ message: 'Email or password is incorrect!' });
 
@@ -166,7 +164,7 @@ class AccountsController {
             const { id, currentPassword, newPassword } = req.body;
 
             const existedAccount = await this.accountService.findById(id);
-          
+
             if (existedAccount.recordset.length === 0) return res.status(400).send({ massage: 'Permision Deny!' });
 
             const { PASSWORD } = existedAccount.recordset[0];
@@ -178,7 +176,7 @@ class AccountsController {
             const newHashPassword = await bcrypt.hash(newPassword, 12);
 
             const updatedPassword = await this.accountService.updatePassword(id, newHashPassword);
-            
+
             if (updatedPassword.rowsAffected.length === 0) return res.status(500).send({ massage: 'Update fail!' });
 
             return res.status(500).send({ massage: 'Update successfully!' });
@@ -208,5 +206,5 @@ class AccountsController {
     }
 }
 
-export default new AccountsController();
+export default AccountsController;
 

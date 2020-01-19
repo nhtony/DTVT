@@ -1,14 +1,14 @@
-
 const sql = require('mssql');
+import {Service} from "../../DI/ServiceDecorator";
 import IAccount from './accountsBase';
+@Service()
 class AccountService implements IAccount {
-
     async findAll() {
         return await sql.db.query('SELECT * FROM ACCOUNT');
     }
 
     async findById(id: string) {
-        return await sql.db.query(`SELECT ACCOUNT_ID,QUYEN,STATUS,PASSWORD FROM ACCOUNT WHERE ACCOUNT_ID = '${id}'`);
+        return await sql.db.query(`SELECT ACCOUNT_ID,QUYEN,STATUS,PASSWORD,MA_SINH_VIEN,MA_GIANG_VIEN FROM ACCOUNT WHERE ACCOUNT_ID = '${id}'`);
     }
 
     async findByIdLecture(id: string) {

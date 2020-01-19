@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from "express";
+import { Controller } from "../../DI/Controller";
 import OTPService from './otpService';
 import AccountService from '../accounts/accountsService';
 import StudentService from '../students/studentsService';
 import { sendEmail } from '../../services/mailer';
 import { generateOTP } from '../../common/index';
 
+@Controller()
 class OTPController {
 
     private nextReq = {
@@ -14,15 +16,7 @@ class OTPController {
         expirationTime: 300000
     };
 
-    private accountService: AccountService;
-    private studentService: StudentService;
-    private otpService: OTPService;
-
-    constructor(_accountService = new AccountService(),_studentService = new StudentService(),_otpService = new OTPService()) {
-        this.accountService = _accountService;
-        this.otpService = _otpService;
-        this.studentService = _studentService;
-    }
+    constructor(protected accountService: AccountService, protected studentService: StudentService, protected otpService: OTPService) { }
 
     sendOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -30,11 +24,19 @@ class OTPController {
 
             const existedAccount = await this.accountService.findById(id);
 
-            const { ACCOUNT_ID, STATUS } = existedAccount.recordset[0] || {};
+            const { ACCOUNT_ID, STATUS, MA_SINH_VIEN } = existedAccount.recordset[0] || {};
+            
+            console.log("TCL: OTPController -> sendOTP -> MA_SINH_VIEN", MA_SINH_VIEN)
 
             if (!ACCOUNT_ID) return res.status(400).send({ message: "Account not found" });
 
             if (STATUS === 1) return res.status(400).send({ message: "Account is actived" });
+
+            if (MA_SINH_VIEN) { // Nếu MSV có tồn tại trong account thì kiểm trong trong bảng sv đã có email chưa
+                const studentEmail = await this.studentService.findEmailById(MA_SINH_VIEN);
+                console.log("TCL: OTPController -> sendOTP -> studentEmail", studentEmail)
+                if (studentEmail.recordset.length) return res.status(400).send({ message: "Email is actived" });
+            } // Không cần check email tại giảng viên
 
             const otp = generateOTP();
 
@@ -80,7 +82,7 @@ class OTPController {
 
             const result = await this.otpService.find(otp, id);
             if (!result.recordset.length) return res.status(500).send({ massage: "OTP was expired" });
-            
+
             const { EMAIL } = result.recordset[0];
             const newEmail = await this.studentService.updateEmailById(EMAIL, id);
             if (!newEmail.rowsAffected.length) return res.status(500).send({ massage: 'Fail!' });
@@ -130,5 +132,5 @@ class OTPController {
     }
 }
 
-export default new OTPController();
+export default OTPController;
 

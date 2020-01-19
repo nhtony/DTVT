@@ -1,16 +1,19 @@
 
 import OTPController from './otpController';
+import { Injector } from '../../DI/Injector';
+
+const otpController = Injector.resolve<OTPController>(OTPController);
 
 const otpRoutes = {
     sendOTP: {
         path: "/otp/send",
         method: "post",
-        handler: [OTPController.sendOTP,OTPController.saveOTP]
+        handler: [otpController.sendOTP,otpController.saveOTP]
     },
     verifyOTP: {
         path: "/otp/verify",
         method: "post",
-        handler: [OTPController.verifyOTP,OTPController.activeAccount,OTPController.deleteOTP]
+        handler: [otpController.verifyOTP,otpController.activeAccount,otpController.deleteOTP]
     }
 };
 

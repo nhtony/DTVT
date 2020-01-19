@@ -1,21 +1,20 @@
 import { Request, Response } from "express";
+import { HTTP400Error, HTTP404Error } from "../../utils/httpErrors";
+import { Controller } from '../../DI/Controller';
 import studentSchema from './student';
 import StudentService from './studentsService';
+@Controller()
 class StudentController {
-
-    private stundentService: StudentService;
-    
-    constructor(_studentService = new StudentService()){
-        this.stundentService = _studentService;
-    }
-    
+    constructor(protected stundentService: StudentService) { }
     getStudents = async (req: Request, res: Response) => {
         try {
             const data = await this.stundentService.findAll();
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: StudentController -> getStudents -> error", error)
-            res.status(500).send();
+            res.status(200).send();
+            // let err = new HTTP404Error();
+            // throw err;
         }
     }
 
@@ -26,7 +25,6 @@ class StudentController {
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: StudentController -> getStudentById -> error", error)
-
             res.status(500).send();
         }
     }
@@ -97,4 +95,4 @@ class StudentController {
     }
 }
 
-export default new StudentController();
+export default StudentController;

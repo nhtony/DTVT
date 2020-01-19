@@ -1,5 +1,7 @@
 
 const sql = require('mssql');
+import { Service } from "../../DI/ServiceDecorator";
+@Service()
 class OTPService {
 
     async update(code: string, email: string, ms: string) {

@@ -1,14 +1,12 @@
 import { Request, Response } from "express";
+import { Controller } from "../../DI/Controller";
 import lectureSchema from './lecture';
 import LectureSevice from './lecturesService';
 
+@Controller()
 class LecturesController {
 
-    private lectureService: LectureSevice;
-
-    constructor(_lectureService = new LectureSevice()) {
-        this.lectureService = _lectureService;
-    }
+    constructor(protected lectureService: LectureSevice) { }
 
     getLeclures = async (req: Request, res: Response) => {
         try {
@@ -99,4 +97,4 @@ class LecturesController {
     }
 }
 
-export default new LecturesController();
+export default LecturesController;
