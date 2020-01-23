@@ -1,3 +1,5 @@
-import {handleAccesControl,handleBodyRequestParsing} from './common';
+import { handleAccesControl, handleCors,
+    handleBodyRequestParsing,
+    handleCompression } from './common';
 
-export default [handleBodyRequestParsing,handleAccesControl];
+export default [handleBodyRequestParsing, handleAccesControl,handleCors,handleCompression];

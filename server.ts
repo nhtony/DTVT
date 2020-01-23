@@ -3,7 +3,6 @@ import express from "express";
 import { applyMiddleware, applyRoutes } from './utils';
 import middleware from './middleware'
 import routes from './routes';
-// import errorHandlers from "./middleware/errorHandlers";
 const dotenv = require('dotenv');
 const sql = require('mssql');
 
@@ -22,7 +21,7 @@ dotenv.config();
 const configDB = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  server: 'localhost\\MSSQLSERVERHAO',
+  server: 'localhost\\' + process.env.DB_SERVER,
   database: process.env.DB_NAME
 }
 
@@ -31,19 +30,18 @@ sql.connect(configDB)
     sql.db = pool;
   })
   .then(() => {
+    const router = express();
+    const { PORT = 5000 } = process.env;
+    const server = http.createServer(router);
     server.listen(PORT, () =>
       console.log(`Server is running http://localhost:${PORT}...`)
     );
+    applyMiddleware(middleware, router);
+    applyRoutes(routes, router);
+    // applyMiddleware(errorHandlers, router);
   })
 
-const router = express();
 
-applyMiddleware(middleware, router);
-applyRoutes(routes, router);
-// applyMiddleware(errorHandlers, router);
-
-const { PORT = 5000 } = process.env;
-const server = http.createServer(router);
 
 
 

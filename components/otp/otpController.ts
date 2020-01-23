@@ -23,13 +23,11 @@ class OTPController {
 
     sendOTP = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { email, id } = req.body;
+            const { email, id } =  req.body
 
             const existedAccount = await this.accountService.findById(id);
 
             const { ACCOUNT_ID, STATUS, MA_SINH_VIEN } = existedAccount.recordset[0] || {};
-            
-            console.log("TCL: OTPController -> sendOTP -> MA_SINH_VIEN", MA_SINH_VIEN)
 
             if (!ACCOUNT_ID) return res.status(400).send({ message: "Account not found" });
 
