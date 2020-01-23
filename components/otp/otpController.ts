@@ -17,8 +17,8 @@ class OTPController {
     };
 
     constructor(
-        protected accountService: AccountService, 
-        protected studentService: StudentService, 
+        protected accountService: AccountService,
+        protected studentService: StudentService,
         protected otpService: OTPService) { }
 
     sendOTP = async (req: Request, res: Response, next: NextFunction) => {
@@ -28,6 +28,11 @@ class OTPController {
             const existedAccount = await this.accountService.findById(id);
 
             const { ACCOUNT_ID, STATUS, MA_SINH_VIEN } = existedAccount.recordset[0] || {};
+<<<<<<< HEAD
+=======
+
+            console.log("TCL: OTPController -> sendOTP -> MA_SINH_VIEN", MA_SINH_VIEN)
+>>>>>>> 689ae1624dfd43e689a48d92f4eeed158cd7d93d
 
             if (!ACCOUNT_ID) return res.status(400).send({ message: "Account not found" });
 
@@ -35,8 +40,8 @@ class OTPController {
 
             if (MA_SINH_VIEN) { // Nếu MSV có tồn tại trong account thì kiểm trong trong bảng sv đã có email chưa
                 const studentEmail = await this.studentService.findEmailById(MA_SINH_VIEN);
-                console.log("TCL: OTPController -> sendOTP -> studentEmail", studentEmail)
-                if (studentEmail.recordset.length) return res.status(400).send({ message: "Email is actived" });
+                const { EMAIL } = studentEmail.recordset[0] || {};
+                if (!EMAIL) return res.status(400).send({ message: "Email is actived" });
             } // Không cần check email tại giảng viên
 
             const otp = generateOTP();
