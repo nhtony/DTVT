@@ -1,5 +1,5 @@
 const Joi = require('@hapi/joi');
-import { errorMessage } from '../../common';
+import { errorMessage } from '../../common/error';
 const accountSchema = Joi.object({
     password: Joi.string().required().min(8).error((errors: Error[]) => errorMessage('Password', errors)),
     id: Joi.string().required().error((errors: Error[]) => errorMessage('MSGV', errors)),

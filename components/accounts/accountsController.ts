@@ -4,8 +4,9 @@ import AccountService from './accountsService';
 import LectureService from '../lectures/lecturesService';
 import StudentService from '../students/studentsService';
 import { accountSchema, accountPasswordSchema } from './account';
-import { appendLeadingZeroes } from '../../common';
-import { signToken } from '../../common';
+import { appendLeadingZeroes } from '../../common/service';
+import { signToken } from '../../common/auth';
+import { check } from '../../common/error';
 
 const bcrypt = require('bcryptjs');
 @Controller()
@@ -64,7 +65,8 @@ class AccountsController {
 
             //Check account đã tồn tại chưa
             const existedAccount = await this.accountService.findById(id);
-            if (existedAccount.recordset.length) return res.status(400).send({ message: "ID already registed" });
+
+            if (check(existedAccount, 'EXISTED')) return res.status(400).send({ message: "ID already registed" });
 
             //Check ngày sinh có hợp lệ?
             const isBirthValid = await this.checkBirth(req, res, birthDB, type);
@@ -74,11 +76,10 @@ class AccountsController {
             const hashPassword = await bcrypt.hash(password, 12);
 
             //Thêm sinh viên/ giảng viên xuống DB
-            const newAccount = type ?
-                await this.accountService.createWithIdLecture(hashPassword, role, id) :
-                await this.accountService.createWithIdStudent(hashPassword, role, id)
+            const newAccount = type ? await this.accountService.createWithIdLecture(hashPassword, role, id) : await this.accountService.createWithIdStudent(hashPassword, role, id)
 
-            if (newAccount.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            if (check(newAccount, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+           
             res.status(200).send({ message: 'Successful!', id });
 
         } catch (error) {
@@ -91,10 +92,13 @@ class AccountsController {
         try {
             const { id } = req.body;
             const existedAccount = await this.accountService.findById(id);
-            if (!existedAccount.recordset.length) return res.status(400).send({ message: 'Account not exist !' });
+            if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: 'Account not exist !' });
+
             const activedAccount = isActive ? await this.accountService.updateStatusById(id, 'enable') : await this.accountService.updateStatusById(id, 'disable');
-            if (activedAccount.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+
+            if (check(activedAccount, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send({ message: 'Successful!', id });
+
         } catch (error) {
             console.log("TCL: AccountsController -> activeAccount -> error", error)
             res.status(500).send(error);
@@ -105,10 +109,13 @@ class AccountsController {
         try {
             const { id } = req.body;
             const existedAccount = await this.accountService.findById(id);
-            if (!existedAccount.recordset.length) return res.status(400).send({ message: 'Account not exist !' });
+            if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: 'Account not exist !' });
+
             const updateRole = await this.studentService.updateRoleById(1, id);
-            if (updateRole.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            if (check(updateRole, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+
             res.status(200).send({ message: 'Successful!' });
+
         } catch (error) {
             console.log("TCL: AccountsController -> setStudentRole -> error", error)
             res.status(500).send(error);
@@ -121,7 +128,7 @@ class AccountsController {
 
             const existedAccount = await this.accountService.findById(id);
 
-            if (!existedAccount.recordset.length) return res.status(401).send({ message: 'Email or password is incorrect!' });
+            if (!check(existedAccount, 'EXISTED')) return res.status(401).send({ message: 'Email or password is incorrect!' });
 
             const { PASSWORD, ACCOUNT_ID, QUYEN, STATUS } = existedAccount.recordset[0];
 
@@ -133,7 +140,7 @@ class AccountsController {
 
             const inforAccount = type ? await this.lectureService.findById(ACCOUNT_ID) : await this.studentService.findById(ACCOUNT_ID);
 
-            if (!inforAccount.recordset.length) return res.status(401).send({ message: 'please switch API' });
+            if (!check(inforAccount, 'EXISTED')) return res.status(401).send({ message: 'please switch API' });
 
             const { HO_SINH_VIEN, TEN_SINH_VIEN, EMAIL, NGAY_SINH, MaLop, HO_GIANG_VIEN, TEN_GIANG_VIEN } = inforAccount.recordset[0];
 
@@ -165,7 +172,7 @@ class AccountsController {
 
             const existedAccount = await this.accountService.findById(id);
 
-            if (existedAccount.recordset.length === 0) return res.status(400).send({ message: 'Permision Deny!' });
+            if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: 'Permision Deny!' });
 
             const { PASSWORD } = existedAccount.recordset[0];
 
@@ -177,7 +184,7 @@ class AccountsController {
 
             const updatedPassword = await this.accountService.updatePassword(id, newHashPassword);
 
-            if (updatedPassword.rowsAffected.length === 0) return res.status(500).send({ message: 'Update fail!' });
+            if (check(updatedPassword, 'NOT_CHANGED')) return res.status(500).send({ message: 'Update fail!' });
 
             return res.status(500).send({ message: 'Update successfully!' });
 

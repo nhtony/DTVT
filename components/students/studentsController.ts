@@ -3,6 +3,8 @@ import { Request, Response } from "express";
 import { Controller } from '../../DI/Controller';
 import studentSchema from './student';
 import StudentService from './studentsService';
+import { check } from '../../common/error';
+
 @Controller()
 class StudentController {
     constructor(protected stundentService: StudentService) { }
@@ -39,11 +41,11 @@ class StudentController {
 
             //Check lecutre đã tồn tại chưa
             const existedStudent = await this.stundentService.findById(id);
-            if (existedStudent.recordset.length) return res.status(400).send({ message: "Student existed!" });
+            if (check(existedStudent, 'EXISTED')) return res.status(400).send({ message: "Student existed!" });
 
             const newStudent = await this.stundentService.create(id, firstname, lastname, birth, email, phone, classId, groupId);
 
-            if (newStudent.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            if (check(newStudent,'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Successful!' });
 
@@ -66,11 +68,11 @@ class StudentController {
 
             //Check lecutre đã tồn tại chưa
             const existedStudent = await this.stundentService.findById(id);
-            if (!existedStudent.recordset.length) return res.status(400).send({ message: "Student not exist!" });
+            if (!check(existedStudent,'EXISTED')) return res.status(400).send({ message: "Student not exist!" });
 
             const updatedStudent = await this.stundentService.update(id, firstname, lastname, birth, email, phone, classId, groupId);
 
-            if (updatedStudent.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            if (check(updatedStudent,'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Successful!' });
 
@@ -84,7 +86,7 @@ class StudentController {
         try {
             const { id } = req.body;
             const deletedStudent = await this.stundentService.delete(id);
-            if (!deletedStudent.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
+            if (check(deletedStudent,'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send({ message: 'Success!' });
         } catch (error) {
             console.log("TCL: StudentController -> deleteStudent -> error", error)

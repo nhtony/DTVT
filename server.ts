@@ -21,11 +21,7 @@ dotenv.config();
 const configDB = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-<<<<<<< HEAD
   server: 'localhost\\' + process.env.DB_SERVER,
-=======
-  server: 'localhost\\MSSQLSERVER',
->>>>>>> 689ae1624dfd43e689a48d92f4eeed158cd7d93d
   database: process.env.DB_NAME
 }
 
@@ -43,6 +39,8 @@ sql.connect(configDB)
     applyMiddleware(middleware, router);
     applyRoutes(routes, router);
     // applyMiddleware(errorHandlers, router);
+  }).catch((err: any) => {
+    console.log("TCL: err", err)
   })
 
 

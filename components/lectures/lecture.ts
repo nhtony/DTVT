@@ -1,5 +1,5 @@
 const Joi = require('@hapi/joi');
-import { errorMessage } from '../../common';
+import { errorMessage } from '../../common/error';
 const lectureSchema = Joi.object({
     id: Joi.number().required().error((errors: Error[]) => errorMessage('MSGV', errors)),
     firstname: Joi.string().required().error((errors: Error[]) => errorMessage('Firstname', errors)),
