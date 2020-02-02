@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { Controller } from "../../DI/Controller";
 import subjectSchema from './subject';
 import SubjectService from './subjectsService';
-
+import { check } from '../../common/error';
 @Controller()
 class SubjectsController {
     
@@ -40,11 +40,11 @@ class SubjectsController {
 
             //Check lecutre đã tồn tại chưa
             const existedSubject = await this.subjectService.findById(subjectId);
-            if (existedSubject.recordset.length) return res.status(400).send({ message: "Subject existed!" });
+            if (check(existedSubject,'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
 
             const newSubject = await this.subjectService.create(subjectId, subjectName, subjectNumber, subjectRequired, majorId);
 
-            if (newSubject.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            if (check(newSubject,'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Successful!' });
 
@@ -67,11 +67,11 @@ class SubjectsController {
 
             //Check lecutre đã tồn tại chưa
             const existedSubject = await this.subjectService.findById(subjectId);
-            if (existedSubject.recordset.length) return res.status(400).send({ message: "Subject existed!" });
+            if (check(existedSubject,'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
 
             const updatedLecture = await this.subjectService.update(subjectId, subjectName, subjectNumber, subjectRequired, majorId);
 
-            if (updatedLecture.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            if (check(updatedLecture,'NOT_CHANGE')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Successful!' });
 
@@ -86,7 +86,7 @@ class SubjectsController {
             const { id } = req.body;
             const deletedSubject = await this.subjectService.delete(id);
 
-            if (!deletedSubject.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
+            if (check(deletedSubject,'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Success!' });
 

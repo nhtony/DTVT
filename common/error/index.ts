@@ -1,22 +1,3 @@
-const jwt = require('jsonwebtoken');
-
-export const generateOTP = () => {
-    const digits = '0123456789';
-    const otpLength = 6;
-    let otp = '';
-    for (let i = 1; i <= otpLength; i++) {
-        let index = Math.floor(Math.random() * (digits.length));
-        otp = otp + digits[index];
-    }
-    return otp;
-}
-
-export const appendLeadingZeroes = (n: number) => {
-    if (n <= 9) {
-        return "0" + n;
-    }
-    return n
-}
 
 export const errorMessage = (title: string, errors: any[]) => {
     errors.forEach(error => {
@@ -41,9 +22,17 @@ export const errorMessage = (title: string, errors: any[]) => {
         }
     });
     return errors;
-}
+};
 
-export const signToken = (payload:any) => {
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRED_ID });
-    return token
-}
+export const check = (checker: any, key: any) => {
+    switch (key) {
+        case 'EXISTED': // length = 0 là chưa tồn tại => false
+            return checker.recordset.length ? true : false;
+        case 'NOT_CHANGED':// length = 0 là update/create thất bại => true
+            return checker.rowsAffected.length ? false : true
+        case 'NOT_DELETED':// length = 0 là delete thành công => true
+            return checker.rowsAffected.length ? false : true
+        default:
+            throw new Error('Key not found');
+    }
+};

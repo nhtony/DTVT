@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Controller } from "../../DI/Controller";
 import lectureSchema from './lecture';
 import LectureSevice from './lecturesService';
+import { check } from '../../common/error';
 
 @Controller()
 class LecturesController {
@@ -42,11 +43,11 @@ class LecturesController {
 
             //Check lecutre đã tồn tại chưa
             const existedLecture = await this.lectureService.findById(id);
-            if (existedLecture.recordset.length) return res.status(400).send({ message: "Lecture existed!" });
+            if (check(existedLecture, 'EXISTED')) return res.status(400).send({ message: "Lecture existed!" });
 
             const newLecture = await this.lectureService.create(id, firstname, lastname, email, phone, address, khoaId);
 
-            if (newLecture.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            if (check(existedLecture, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Successful!' });
 
@@ -70,11 +71,11 @@ class LecturesController {
 
             //Check lecutre đã tồn tại chưa
             const existedLecture = await this.lectureService.findById(id);
-            if (!existedLecture.recordset.length) return res.status(400).send({ message: "Lecture not exist!" });
+            if (!check(existedLecture, 'EXISTED')) return res.status(400).send({ message: "Lecture not exist!" });
 
             const updatedLecture = await this.lectureService.update(id, firstname, lastname, email, phone, address, khoaId);
 
-            if (updatedLecture.rowsAffected.length === 0) return res.status(500).send({ message: 'Fail!' });
+            if (check(updatedLecture, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Successful!' });
 
@@ -88,7 +89,7 @@ class LecturesController {
         try {
             const { id } = req.body;
             const deletedLecture = await this.lectureService.delete(id);
-            if (!deletedLecture.rowsAffected.length) return res.status(500).send({ message: 'Fail!' });
+            if (check(deletedLecture, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send({ message: 'Success!' });
         } catch (error) {
             console.log("TCL: LecturesController -> deleteLecture -> error", error);
