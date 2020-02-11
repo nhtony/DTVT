@@ -7,6 +7,17 @@ import { check } from '../../common/error';
 @Controller()
 class LanesController {
 
+    /**
+     * lane_id => card(lane_id)
+     * lane = [
+     * {
+     * id: 
+     * title:
+     * cards: []
+     * }]
+     * 
+     */
+
     constructor(protected lanesService: LanesService) { }
 
     getLanes = async (req: Request, res: Response) => {
@@ -16,6 +27,7 @@ class LanesController {
 
             // Phân loại card theo id (thuộc vào id của lane nào one - many)
             const splitCard: { [index: string]: any } = {};
+        
             cardLanes.forEach((item: any) => {
                 const card = {
                     id: item.id ? item.id.toString() : null,
@@ -69,11 +81,12 @@ class LanesController {
 
             if (check(newLane, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            const { id, label } = newLane.recordset[0];
-
-            const outputLane = {id: id.toString(),title,label,cards:[]};
-
-            res.status(200).send({ message: 'Successful!', new: outputLane });
+            const newLaneResult = {
+                id: newLane.recordset[0].id.toString(),
+                title: newLane.recordset[0].title,
+                cards: []
+            };
+            res.status(200).send({ message: 'Successful!', new: newLaneResult });
 
         } catch (error) {
             console.log("TCL: LanesController -> createLane -> error", error)
@@ -86,7 +99,7 @@ class LanesController {
 
             //Validation
             const validResult = lanesSchema.validate(req.body, { abortEarly: false });
-
+            
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
             let { id, title } = req.body;
@@ -95,7 +108,13 @@ class LanesController {
 
             if (check(updatedLane, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ message: 'Successful!' });
+            const updateLaneResult = {
+                id: updatedLane.recordset[0].id.toString(),
+                title: updatedLane.recordset[0].title,
+                cards: []
+            };
+
+            res.status(200).send({ message: 'Successful!', update: updateLaneResult });
 
         } catch (error) {
             console.log("TCL: LanesController -> updateLane -> error", error)

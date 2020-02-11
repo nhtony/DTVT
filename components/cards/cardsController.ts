@@ -23,6 +23,7 @@ class CardsController {
         try {
 
             //Validation
+
             const validResult = cardsSchema.validate(req.body, { abortEarly: false });
 
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
@@ -63,7 +64,7 @@ class CardsController {
             const { id } = req.body;
             const deletedCard = await this.cardsService.delete(id);
             if (check(deletedCard, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
-            res.status(200).send({ message: 'Success!' });
+            res.status(200).send({ message: 'Success!', deleteId: id });
         } catch (error) {
             console.log("TCL: CardsController -> deleteCard -> error", error);
             res.status(500).send();

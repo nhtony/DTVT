@@ -49,7 +49,7 @@ class LecturesController {
 
             if (check(existedLecture, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ message: 'Successful!' });
+            res.status(200).send({ message: 'Successful!', new: newLecture.recordset[0] });
 
         } catch (error) {
             console.log("TCL: LecturesController -> getLeclureByID -> error", error)
@@ -77,7 +77,7 @@ class LecturesController {
 
             if (check(updatedLecture, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ message: 'Successful!' });
+            res.status(200).send({ message: 'Successful!', update: updatedLecture.recordset[0] });
 
         } catch (error) {
             console.log("TCL: LecturesController -> updateLecture -> error", error)
@@ -90,7 +90,7 @@ class LecturesController {
             const { id } = req.body;
             const deletedLecture = await this.lectureService.delete(id);
             if (check(deletedLecture, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
-            res.status(200).send({ message: 'Success!' });
+            res.status(200).send({ message: 'Success!', deleteId: id });
         } catch (error) {
             console.log("TCL: LecturesController -> deleteLecture -> error", error);
             res.status(500).send();

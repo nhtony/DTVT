@@ -5,7 +5,7 @@ const sql = require('mssql');
 @Service()
 class LanesService implements ILanes {
     async findAll() {
-        return await sql.db.query('SELECT LANE_ID AS id,TITLE AS title,LABEL AS label FROM LANES');
+        return await sql.db.query('SELECT LANE_ID AS id,TITLE AS title FROM LANES');
     }
 
     async findById(id: number) {
@@ -15,7 +15,7 @@ class LanesService implements ILanes {
     async create(title: string) {
         return await sql.db.query(`INSERT INTO LANES (TITLE)
         OUTPUT INSERTED.LANE_ID AS id,
-               INSERTED.LABEL AS label 
+               INSERTED.TITLE AS title 
         VALUES ('${title}')`);
     }
 
