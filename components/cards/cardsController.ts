@@ -19,17 +19,6 @@ class CardsController {
         }
     }
 
-    getCardByID = async (req: Request, res: Response) => {
-        try {
-            const cardId = req.params.id;
-            const data = await this.cardsService.findById(Number(cardId));
-            res.status(200).send(data.recordset);
-        } catch (error) {
-            console.log("TCL: CardsController -> getCardByID -> error", error)
-            res.status(500).send();
-        }
-    }
-
     createCard = async (req: Request, res: Response) => {
         try {
 
@@ -40,7 +29,7 @@ class CardsController {
 
             let { cardId, title, label, description, laneId } = req.body;
 
-            const newCard = await this.cardsService.create(title, label, description, laneId);
+            const newCard = await this.cardsService.create(cardId, title, label, description, laneId);
 
             if (check(newCard, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
@@ -55,14 +44,9 @@ class CardsController {
     updateCard = async (req: Request, res: Response) => {
         try {
 
-            //Validation
-            const validResult = cardsSchema.validate(req.body, { abortEarly: false });
+            let { cardId,laneId } = req.body;
 
-            if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
-
-            let { id, title, label, description } = req.body;
-
-            const updatedCard = await this.cardsService.update(id, title, label, description);
+            const updatedCard = await this.cardsService.update(cardId, laneId);
 
             if (check(updatedCard, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 

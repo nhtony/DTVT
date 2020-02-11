@@ -15,11 +15,6 @@ const lanesRoutes = {
         method: "get",
         handler: lanesController.getLaneByID
     },
-    // getLaneDetail: {
-    //     path: "/lanes/detail/:id",
-    //     method: "get",
-    //     handler: [lanesController.getLaneDetail]
-    // },
     createLane: {
         path: "/lanes",
         method: "post",

@@ -12,16 +12,19 @@ class LanesService implements ILanes {
         return await sql.db.query(`SELECT * FROM LANES WHERE LANE_ID = '${id}'`);
     }
 
-    async create(title: string, label: string) {
-        return await sql.db.query(`INSERT INTO LANES (TITLE,LABEL) VALUES ('${title}','${label}')`);
+    async create(title: string) {
+        return await sql.db.query(`INSERT INTO LANES (TITLE)
+        OUTPUT INSERTED.LANE_ID AS id,
+               INSERTED.LABEL AS label 
+        VALUES ('${title}')`);
     }
 
-    async update(id: number, title: string, label: string) {
-        return await sql.db.query(`UPDATE LANES SET TITLE = '${title}',LABEL = '${label}' WHERE ID = '${id}'`);
+    async update(id: number, title: string) {
+        return await sql.db.query(`UPDATE LANES SET TITLE = '${title}' WHERE LANE_ID = '${id}'`);
     }
 
     async delete(id: number) {
-        return await sql.db.query(`DELETE FROM LANES WHERE ID = '${id}'`);
+        return await sql.db.query(`DELETE FROM LANES WHERE LANE_ID = '${id}'`);
     }
 
     async join() {

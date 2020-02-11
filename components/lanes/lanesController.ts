@@ -18,12 +18,12 @@ class LanesController {
             const splitCard: { [index: string]: any } = {};
             cardLanes.forEach((item: any) => {
                 const card = {
-                    id: item.id.toString(),
+                    id: item.id ? item.id.toString() : null,
                     title: item.title,
                     label: item.label,
                     description: item.description
                 }
-                splitCard[item.laneId] ? splitCard[item.laneId].push(card) : splitCard[item.laneId] = [card];
+                splitCard[item.laneId] ? splitCard[item.laneId].push(card) : splitCard[item.laneId] = card.id ? [card] : [];
             });
 
             const resultLane = await this.lanesService.findAll();
@@ -63,13 +63,17 @@ class LanesController {
 
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            let { title, label } = req.body;
+            let { title } = req.body;
 
-            const newLane = await this.lanesService.create(title, label);
+            const newLane = await this.lanesService.create(title);
 
             if (check(newLane, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ message: 'Successful!' });
+            const { id, label } = newLane.recordset[0];
+
+            const outputLane = {id: id.toString(),title,label,cards:[]};
+
+            res.status(200).send({ message: 'Successful!', new: outputLane });
 
         } catch (error) {
             console.log("TCL: LanesController -> createLane -> error", error)
@@ -85,9 +89,9 @@ class LanesController {
 
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            let { id, title, label } = req.body;
+            let { id, title } = req.body;
 
-            const updatedLane = await this.lanesService.update(id, title, label);
+            const updatedLane = await this.lanesService.update(id, title);
 
             if (check(updatedLane, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
@@ -104,29 +108,13 @@ class LanesController {
             const { id } = req.body;
             const deletedLane = await this.lanesService.delete(id);
             if (check(deletedLane, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
-            res.status(200).send({ message: 'Success!' });
+            res.status(200).send({ message: 'Success!', delete: id });
         } catch (error) {
             console.log("TCL: LanesController -> deleteLane -> error", error)
             res.status(500).send();
         }
     }
 
-    // getLaneDetail = async (req: Request, res: Response) => {
-    //     try {
-    //         const { id } = req.params;
-    //         const lanes = await this.lanesService.findById(Number(id));
-    //         if (!check(lanes, 'EXISTED')) return res.status(400).send({ message: "ID not found" });
-    //         const cards = await this.lanesService.join();
-    //         console.log("TCL: LanesController -> getLaneDetail -> cards", cards)
-    //         const arrCard: any = [];
-    //         cards.recordset.map((element: any) => { arrCard.push(element); });
-    //         lanes.recordset[0].CARDS = arrCard;
-    //         res.status(200).send(lanes.recordset[0]);
-    //     } catch (error) {
-    //         console.log("TCL: LanesController -> getLaneDetail -> error", error)
-    //         res.status(500).send();
-    //     }
-    // }
 }
 
 export default LanesController;

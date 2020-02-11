@@ -10,11 +10,6 @@ const cardsRoutes = {
         method: "get",
         handler: cardsController.getCards
     },
-    getCard: {
-        path: "/cards/:id",
-        method: "get",
-        handler: cardsController.getCardByID
-    },
     createCard: {
         path: "/cards",
         method: "post",
