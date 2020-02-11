@@ -7,20 +7,22 @@ class LectureService implements ICards {
         return await sql.db.query('SELECT * FROM CARDS');
     }
 
-    async findById(id: number) {
-        return await sql.db.query(`SELECT * FROM CARDS WHERE ID = '${id}'`);
+    async findById(id: string) {
+        return await sql.db.query(`SELECT * FROM CARDS WHERE CARD_ID = '${id}'`);
     }
 
-    async create(title: string, label: string, description: string, laneId: number) {
-        return await sql.db.query(`INSERT INTO CARDS (TITLE,LABEL,DESCRIPTION,LANE_ID) VALUES ('${title}','${label}','${description}','${laneId}') `);
+    async create(cardId: string, title: string, label: string, description: string, laneId: number) {
+        return await sql.db.query(`
+        INSERT INTO CARDS (CARD_ID,TITLE,LABEL,DESCRIPTION,LANE_ID) 
+        VALUES ('${cardId}','${title}','${label}','${description}','${laneId}') `);
     }
 
-    async update(id: number, title: string, label: string, description: string) {
-        return await sql.db.query(`UPDATE CARDS SET TITLE = '${title}',LABEL = '${label}', DESCRIPTION='${description}' WHERE ID = '${id}'`);
+    async update(cardId: string, laneId: number) {
+        return await sql.db.query(`UPDATE CARDS SET LANE_ID = '${laneId}' WHERE CARD_ID = '${cardId}'`);
     }
 
-    async delete(id: number) {
-        return await sql.db.query(`DELETE FROM CARDS WHERE ID = '${id}'`);
+    async delete(id: string) {
+        return await sql.db.query(`DELETE FROM CARDS WHERE CARD_ID = '${id}'`);
     }
 }
 export default LectureService;

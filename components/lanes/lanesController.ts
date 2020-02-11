@@ -7,6 +7,17 @@ import { check } from '../../common/error';
 @Controller()
 class LanesController {
 
+    /**
+     * lane_id => card(lane_id)
+     * lane = [
+     * {
+     * id: 
+     * title:
+     * cards: []
+     * }]
+     * 
+     */
+
     constructor(protected lanesService: LanesService) { }
 
     getLanes = async (req: Request, res: Response) => {
@@ -16,14 +27,16 @@ class LanesController {
 
             // Phân loại card theo id (thuộc vào id của lane nào one - many)
             const splitCard: { [index: string]: any } = {};
+        
             cardLanes.forEach((item: any) => {
                 const card = {
-                    id: item.id.toString(),
+                    id: item.id ? item.id.toString() : null,
                     title: item.title,
                     label: item.label,
                     description: item.description
-                }
-                splitCard[item.laneId] ? splitCard[item.laneId].push(card) : splitCard[item.laneId] = [card];
+                };
+                // Nếu đã tồn tại laneId thì push card vào, nếu chưa thì gán bằng mảng chứa card
+                splitCard[item.laneId] ? splitCard[item.laneId].push(card) : splitCard[item.laneId] = card.id ? [card] : [];
             });
 
             const resultLane = await this.lanesService.findAll();
@@ -63,13 +76,18 @@ class LanesController {
 
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            let { title, label } = req.body;
+            let { title } = req.body;
 
-            const newLane = await this.lanesService.create(title, label);
+            const newLane = await this.lanesService.create(title);
 
             if (check(newLane, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ message: 'Successful!' });
+            const newLaneResult = {
+                id: newLane.recordset[0].id.toString(),
+                title: newLane.recordset[0].title,
+                cards: []
+            };
+            res.status(200).send({ message: 'Successful!', new: newLaneResult });
 
         } catch (error) {
             console.log("TCL: LanesController -> createLane -> error", error)
@@ -82,16 +100,22 @@ class LanesController {
 
             //Validation
             const validResult = lanesSchema.validate(req.body, { abortEarly: false });
-
+            
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            let { id, title, label } = req.body;
+            let { id, title } = req.body;
 
-            const updatedLane = await this.lanesService.update(id, title, label);
+            const updatedLane = await this.lanesService.update(id, title);
 
             if (check(updatedLane, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ message: 'Successful!' });
+            const updateLaneResult = {
+                id: updatedLane.recordset[0].id.toString(),
+                title: updatedLane.recordset[0].title,
+                cards: []
+            };
+
+            res.status(200).send({ message: 'Successful!', update: updateLaneResult });
 
         } catch (error) {
             console.log("TCL: LanesController -> updateLane -> error", error)
@@ -104,7 +128,7 @@ class LanesController {
             const { id } = req.body;
             const deletedLane = await this.lanesService.delete(id);
             if (check(deletedLane, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
-            res.status(200).send({ message: 'Success!' });
+            res.status(200).send({ message: 'Success!', deleteId: id });
         } catch (error) {
             console.log("TCL: LanesController -> deleteLane -> error", error)
             res.status(500).send();
