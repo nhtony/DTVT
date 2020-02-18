@@ -53,7 +53,12 @@ const accountRoutes = {
     resetPassword: {
         path: "/accounts/password/reset",
         method: "post",
-        handler: [authenticate, authorize(['admin', 'lecture', 'student']), accountController.resetPassword]
+        handler: [authenticate, accountController.resetPassword]
+    },
+    changePassword: {
+        path: "/accounts/password/change",
+        method: "post",
+        handler: [authenticate, authorize(['admin', 'lecture', 'student']), accountController.changePassword]
     }
 };
 

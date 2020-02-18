@@ -17,6 +17,10 @@ class StudentService implements IStudent {
         return await sql.db.query(`SELECT MA_SINH_VIEN FROM SINH_VIEN WHERE EMAIL = '${email}'`);
     }
 
+    async findEmailById(id: string) {
+        return await sql.db.query(`SELECT EMAIL FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`)
+    }
+
     async findBirthById(id: string) {
         return await sql.db.query(`SELECT NGAY_SINH FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`);
     }
