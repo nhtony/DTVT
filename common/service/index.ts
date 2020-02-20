@@ -15,3 +15,17 @@ export const appendLeadingZeroes = (n: number) => {
     }
     return n
 }
+
+export const maskEmail = (email: string, options: any) => {
+    let maskedEmail = null;
+
+    const indexOfAt = email.indexOf('@');
+    let maskLengthBeforeAtTheRate = indexOfAt - options.unmaskedStartCharacters;
+    let unmaskLengthAfterAtTheRate = email.length - indexOfAt - options.maskedEndCharacters - 1;
+
+    if (!maskedEmail) {
+        maskedEmail = email.substr(0, options.unmaskedStartCharacters) + `${options.maskWith}`.repeat(maskLengthBeforeAtTheRate)
+            + '@' + email.substr(indexOfAt + 1, unmaskLengthAfterAtTheRate) + `${options.maskWith}`.repeat(options.maskedEndCharacters);
+    }
+    return maskedEmail;
+}

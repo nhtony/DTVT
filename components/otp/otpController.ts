@@ -4,8 +4,9 @@ import OTPService from './otpService';
 import AccountService from '../accounts/accountsService';
 import StudentService from '../students/studentsService';
 import { sendEmail } from '../../services/mailer';
-import { generateOTP } from '../../common/service';
+import { generateOTP, maskEmail } from '../../common/service';
 import { check } from "../../common/error";
+import { signToken } from '../../common/auth';
 
 @Controller()
 class OTPController {
@@ -53,6 +54,51 @@ class OTPController {
 
         } catch (error) {
             console.log("TCL: module.exports.sendEmail -> error", error);
+            res.status(500).send("Thất bại");
+        }
+    }
+
+    sendOtpForgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.body
+
+            const existedAccount = await this.accountService.findById(id);
+
+            if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: "Account not found" });
+
+            const { STATUS, MA_SINH_VIEN } = existedAccount.recordset[0] || {};
+
+            if (STATUS !== 1) return res.status(401).send({ message: 'Account has not actived' });
+
+            const studentEmail = await this.studentService.findEmailById(MA_SINH_VIEN);
+
+            const { EMAIL } = studentEmail.recordset[0] || {};
+
+            const otp = generateOTP();
+
+            const sentEmail = await sendEmail(EMAIL, otp);
+
+            if (!sentEmail) return res.status(500).send({ message: "Fail to send mail!" });
+
+            const updateOTP = await this.otpService.update(otp, EMAIL, MA_SINH_VIEN);
+
+            if (check(updateOTP, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+
+            const maskEmailOptions = {
+                maskWith: "*",
+                unmaskedStartCharacters: 3,
+                maskedEndCharacters: 8,
+            };
+
+            res.status(200).send({
+                id: MA_SINH_VIEN,
+                expirationTime: this.nextReq.expirationTime,
+                email: maskEmail(EMAIL, maskEmailOptions)
+            });
+
+            this.autoDeleteOTP();
+        } catch (error) {
+            console.log("TCL: module.exports.sendEmail -> error", error);
             res.status(500).send();
         }
     }
@@ -64,7 +110,7 @@ class OTPController {
             res.status(200).send(
                 {
                     message: 'Success!',
-                    data: { expirationTime: this.nextReq.expirationTime }
+                    expirationTime: this.nextReq.expirationTime // có gì ông xử lí conflict dùm tui nha này tui sửa ở Front-end rồi á là không cần key data nữa
                 });
             this.autoDeleteOTP();
         } catch (error) {
@@ -98,6 +144,28 @@ class OTPController {
 
         } catch (error) {
             console.log("TCL: module.exports.verifyOTP -> error", error)
+            res.status(500).send();
+        }
+    }
+
+    loginResetPassword = async (req: Request, res: Response) => {
+        try {
+            const { otp, id } = req.body;
+
+            const existedAccount = await this.accountService.findById(id);
+            if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: 'ID is not correct' });
+
+            const { ACCOUNT_ID, QUYEN, STATUS } = existedAccount.recordset[0];
+            if (STATUS !== 1) return res.status(401).send({ message: 'Account has not actived' });
+
+            const existedOTP = await this.otpService.find(otp, id);
+            if (!check(existedOTP, 'EXISTED')) return res.status(500).send({ message: "OTP was expired" });
+
+            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS });
+
+            res.status(200).send({ token });
+        } catch (error) {
+            console.log("TCL: OTPController -> loginResetPassword -> error", error)
             res.status(500).send();
         }
     }

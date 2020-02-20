@@ -14,6 +14,16 @@ const otpRoutes = {
         path: "/otp/verify",
         method: "post",
         handler: [otpController.verifyOTP,otpController.activeAccount,otpController.deleteOTP]
+    },
+    sendOtpForgotPassword: {
+        path: "/otp/send/password/forgot",
+        method: "post",
+        handler: [otpController.sendOtpForgotPassword]
+    },
+    loginResetPassword: {
+        path: "/otp/login/password/reset",
+        method: "post",
+        handler: [otpController.loginResetPassword,otpController.deleteOTP]
     }
 };
 

@@ -79,7 +79,7 @@ class AccountsController {
             const newAccount = type ? await this.accountService.createWithIdLecture(hashPassword, role, id) : await this.accountService.createWithIdStudent(hashPassword, role, id)
 
             if (check(newAccount, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
-           
+
             res.status(200).send({ message: 'Successful!', id });
 
         } catch (error) {
@@ -144,10 +144,9 @@ class AccountsController {
 
             const { HO_SINH_VIEN, TEN_SINH_VIEN, EMAIL, NGAY_SINH, MaLop, HO_GIANG_VIEN, TEN_GIANG_VIEN } = inforAccount.recordset[0];
 
-            const NAME = type ? HO_GIANG_VIEN + ' ' + TEN_GIANG_VIEN : HO_SINH_VIEN + ' ' + TEN_SINH_VIEN;
-
             const profile = {
-                name: NAME,
+                firstName: type ? HO_GIANG_VIEN : HO_SINH_VIEN,
+                lastName: type ? TEN_GIANG_VIEN : TEN_SINH_VIEN,
                 email: EMAIL,
                 birth: NGAY_SINH || null,
                 classId: MaLop || null
@@ -161,9 +160,8 @@ class AccountsController {
         }
     }
 
-    resetPassword = async (req: Request, res: Response) => {
+    changePassword = async (req: Request, res: Response) => {
         try {
-
             //Validation
             const validResult = accountPasswordSchema.validate(req.body, { abortEarly: false });
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
@@ -189,8 +187,29 @@ class AccountsController {
             return res.status(500).send({ message: 'Update successfully!' });
 
         } catch (error) {
-            console.log("TCL: AccountsController -> resetPassword -> error", error)
+            console.log("TCL: AccountsController -> changePassword -> error", error)
             res.status(500).send({ message: 'Update fail!' });
+        }
+    }
+
+    resetPassword = async (req: Request, res: Response) => {
+        try {
+            const { id, newPassword } = req.body;
+
+            const existedAccount = await this.accountService.findById(id);
+
+            if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: "Account not found" });
+
+            const newHashPassword = await bcrypt.hash(newPassword, 12);
+
+            const updatedPassword = await this.accountService.updatePassword(id, newHashPassword);
+
+            if (check(updatedPassword, 'NOT_CHANGED')) return res.status(500).send({ message: 'Update fail!' });
+
+            res.status(200).send({ message: 'Success!' });
+        } catch (error) {
+            console.log("TCL: AccountsController -> resetPassword -> error", error)
+            res.status(500).send({ message: 'Reset fail!' });
         }
     }
 
