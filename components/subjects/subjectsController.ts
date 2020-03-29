@@ -1,12 +1,13 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../DI/Controller";
 import subjectSchema from './subject';
 import SubjectService from './subjectsService';
+import MustSubjectService from '../mustSubject/mustSubjectService';
 import { check } from '../../common/error';
 @Controller()
 class SubjectsController {
     
-    constructor(protected subjectService:SubjectService) {}
+    constructor(protected subjectService: SubjectService, protected mustSubService: MustSubjectService) { }
 
     getSubjects = async (req: Request, res: Response) => {
         try {
@@ -28,6 +29,7 @@ class SubjectsController {
         }
     }
 
+
     createSubject = async (req: Request, res: Response) => {
         try {
 
@@ -36,15 +38,15 @@ class SubjectsController {
 
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            let { subjectId, subjectName, subjectNumber, subjectRequired, majorId } = req.body;
+            let { subjectId, subjectName, subjectNumber, status } = req.body;
 
             //Check lecutre đã tồn tại chưa
             const existedSubject = await this.subjectService.findById(subjectId);
-            if (check(existedSubject,'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
+            if (check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
 
-            const newSubject = await this.subjectService.create(subjectId, subjectName, subjectNumber, subjectRequired, majorId);
+            const newSubject = await this.subjectService.create(subjectId, subjectName, subjectNumber, status);
 
-            if (check(newSubject,'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+            if (check(newSubject, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Successful!' });
 
@@ -62,16 +64,15 @@ class SubjectsController {
 
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            let { subjectId, subjectName, subjectNumber, subjectRequired, majorId } = req.body;
-
+            let { subjectId, subjectName, subjectNumber } = req.body;
 
             //Check lecutre đã tồn tại chưa
             const existedSubject = await this.subjectService.findById(subjectId);
-            if (check(existedSubject,'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
+            if (check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
 
-            const updatedLecture = await this.subjectService.update(subjectId, subjectName, subjectNumber, subjectRequired, majorId);
+            const updatedLecture = await this.subjectService.update(subjectId, subjectName, subjectNumber);
 
-            if (check(updatedLecture,'NOT_CHANGE')) return res.status(500).send({ message: 'Fail!' });
+            if (check(updatedLecture, 'NOT_CHANGE')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Successful!' });
 
@@ -81,12 +82,37 @@ class SubjectsController {
         }
     }
 
+    updateSubjectStatus = async (req: Request, res: Response) => {
+        try {
+            let { id, status } = req.body;
+            const existedSub = await this.subjectService.findById(id);
+
+            if (!check(existedSub, 'EXISTED')) return res.status(400).send({ message: 'Subject is not exist !' });
+
+            if (!status) return res.status(400).send({ message: 'Status is required!' });
+
+            if (status < 0 || status > 3) {
+                return res.status(400).send({ message: 'Status is invalid!' });
+            };
+
+            const updatedSub = await this.subjectService.updateStatus(id, status);
+
+            if (check(updatedSub, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+
+            res.status(200).send({ message: 'Successful!', id });
+
+        } catch (error) {
+            console.log("TCL: AccountsController -> activeAccount -> error", error)
+            res.status(500).send(error);
+        }
+    };
+
     deleteSubject = async (req: Request, res: Response) => {
         try {
             const { id } = req.body;
             const deletedSubject = await this.subjectService.delete(id);
 
-            if (check(deletedSubject,'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
+            if (check(deletedSubject, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: 'Success!' });
 
