@@ -1,32 +1,40 @@
-
-const sql = require('mssql');
 import IStudent from './studentsBase';
 import { Service } from "../../DI/ServiceDecorator";
+import {DAL} from '../../database/DAL';
+
+
+
 @Service()
-class StudentService implements IStudent {
+class StudentService extends DAL implements IStudent {
+
+    constructor(){
+        super();
+        const POOL_NAME = 'student';
+        this.createConnectionPool(POOL_NAME);
+    }
 
     async findAll() {
-        return await sql.db.query('SELECT * FROM SINH_VIEN');
+        return await this.pool.query('SELECT * FROM SINH_VIEN');
     }
 
     async findById(id: string) {
-        return await sql.db.query(`SELECT * FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`);
+        return await this.pool.query(`SELECT * FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`);
     }
 
     async findEmail(email: string) {
-        return await sql.db.query(`SELECT MA_SINH_VIEN FROM SINH_VIEN WHERE EMAIL = '${email}'`);
+        return await this.pool.query(`SELECT MA_SINH_VIEN FROM SINH_VIEN WHERE EMAIL = '${email}'`);
     }
 
     async findEmailById(id: string) {
-        return await sql.db.query(`SELECT EMAIL FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`)
+        return await this.pool.query(`SELECT EMAIL FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`)
     }
 
     async findBirthById(id: string) {
-        return await sql.db.query(`SELECT NGAY_SINH FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`);
+        return await this.pool.query(`SELECT NGAY_SINH FROM SINH_VIEN WHERE MA_SINH_VIEN = '${id}'`);
     }
 
     async create(id: string, firstname: string, lastname: string, birth: Date, email: string, phone: string, classId: string, groupId: string) {
-        return await sql.db.query(`INSERT INTO SINH_VIEN (MA_SINH_VIEN,HO_SINH_VIEN,TEN_SINH_VIEN,NGAY_SINH,EMAIL,SDT,MaLop,MaNhom) 
+        return await this.pool.query(`INSERT INTO SINH_VIEN (MA_SINH_VIEN,HO_SINH_VIEN,TEN_SINH_VIEN,NGAY_SINH,EMAIL,SDT,MaLop,MaNhom) 
         OUTPUT INSERTED.MA_SINH_VIEN AS id,
                INSERTED.HO_SINH_VIEN AS firstName,
                INSERTED.TEN_SINH_VIEN AS lastName,
@@ -40,7 +48,7 @@ class StudentService implements IStudent {
 
     async update(id: string, firstname: string, lastname: string, birth: Date, email: string, phone: string, classId: string, groupId: string) {
 
-        return await sql.db.query(`UPDATE SINH_VIEN SET
+        return await this.pool.query(`UPDATE SINH_VIEN SET
         OUTPUT INSERTED.MA_SINH_VIEN AS id,
             INSERTED.HO_SINH_VIEN AS firstName,
             INSERTED.TEN_SINH_VIEN AS lastName,
@@ -53,15 +61,15 @@ class StudentService implements IStudent {
     }
 
     async updateEmailById(email: string, id: string) {
-        return await sql.db.query(`UPDATE SINH_VIEN SET EMAIL = '${email}'  WHERE MA_SINH_VIEN = '${id}'`);
+        return await this.pool.query(`UPDATE SINH_VIEN SET EMAIL = '${email}'  WHERE MA_SINH_VIEN = '${id}'`);
     }
 
     async updateRoleById(lead: number, id: string) {
-        return await sql.db.query(`UPDATE SINH_VIEN SET LEAD = '${lead}'  WHERE MA_SINH_VIEN = '${id}'`);
+        return await this.pool.query(`UPDATE SINH_VIEN SET LEAD = '${lead}'  WHERE MA_SINH_VIEN = '${id}'`);
     }
 
     async delete(id: string) {
-        return await sql.db.query(`DELETE FROM SINH_VIEN
+        return await this.pool.query(`DELETE FROM SINH_VIEN
         WHERE MA_SINH_VIEN = '${id}' `);
     }
 }
