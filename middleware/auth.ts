@@ -2,15 +2,18 @@ const jwt = require('jsonwebtoken');
 import { Request, Response, NextFunction } from 'express';
 import AccountService from '../components/accounts/accountsService';
 
-let nextReq = {
-    id: '',
-    role: '',
-    status: null
-};
-
 const accountService = new AccountService();
 
-export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+interface IReq {
+    id: string;
+    role: string;
+    status: number;
+    iat: Date;
+    exp: Date;
+    get: Function;
+}
+
+export const authenticate = async (req: IReq, res: Response, next: NextFunction) => {
     const tokenStr = req.get('Authorization');
     if (!tokenStr) return res.status(400).send({ message: "No token provider!" });
     const token = tokenStr.split(' ')[1];
@@ -19,12 +22,14 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
         const existedAccount = await accountService.findById(decodedToken.accountId);
-       
+
         if (!existedAccount.recordset.length) return res.status(401).send({ message: "Permission Deny!" });
 
-        nextReq.id = decodedToken.accountId;
-        nextReq.role = decodedToken.role;
-        nextReq.status = decodedToken.status;
+        req.id = decodedToken.accountId;
+        req.role = decodedToken.role;
+        req.status = decodedToken.status;
+        req.iat = decodedToken.iat;
+        req.exp = decodedToken.exp;
 
         next();
 
@@ -35,9 +40,9 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 }
 
 export const authorize = (accessRoles: string[]) => {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        if (nextReq.status === 1) {
-            const canAccess = accessRoles.includes(nextReq.role);
+    return async (req: IReq, res: Response, next: NextFunction) => {
+        if (req.status === 1) {
+            const canAccess = accessRoles.includes(req.role);
             if (!canAccess) return res.status(401).send({ message: "Permission Deny!" });
             next();
         }

@@ -42,8 +42,3 @@ sql.connect(configDB)
   }).catch((err: any) => {
     console.log("TCL: err", err)
   })
-
-
-
-
-

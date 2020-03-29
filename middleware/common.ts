@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, Router } from "express";
+import express, { Request, Response, NextFunction, Router } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import compression from "compression";
@@ -23,3 +23,6 @@ export const handleCompression = (router: Router) => {
 
 export const handleCors = (router: Router) =>
     router.use(cors({ credentials: true, origin: true }));
+
+export const handleImageUploadPath = (router: Router) => 
+    router.use("/uploads", express.static("uploads"));

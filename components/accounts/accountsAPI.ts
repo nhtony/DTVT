@@ -30,10 +30,15 @@ const accountRoutes = {
         method: "post",
         handler: accountController.createAccount(true)
     },
-    lectureLogin: {
-        path: "/accounts/lecture/login",
+    login: {
+        path: "/accounts/login",
         method: "post",
-        handler: accountController.login(true)
+        handler: accountController.login
+    },
+    getCredential: {
+        path: "/credential",
+        method: "get",
+        handler: [authenticate, authorize(["lecture", "student"]), accountController.getCredential]
     },
     createStudentAccount: {
         path: "/accounts/student",
@@ -44,11 +49,6 @@ const accountRoutes = {
         path: "/accounts/student/role/set",
         method: "put",
         handler: [authenticate, authorize(['admin', 'lecture']), accountController.setStudentRole]
-    },
-    studentLogin: {
-        path: "/accounts/student/login",
-        method: "post",
-        handler: accountController.login(false)
     },
     resetPassword: {
         path: "/accounts/password/reset",

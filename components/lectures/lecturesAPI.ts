@@ -5,10 +5,10 @@ import { Injector } from '../../DI/Injector';
 const lectureController = Injector.resolve<LectureController>(LectureController);
 
 const lectureRoutes = {
-    getLecutures: {
+    getLectures: {
         path: "/lectures",
         method: "get",
-        handler: lectureController.getLeclures
+        handler: lectureController.getLectures
     },
     getLecture: {
         path: "/lectures/:id",

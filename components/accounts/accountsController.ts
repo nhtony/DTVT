@@ -122,7 +122,7 @@ class AccountsController {
         }
     }
 
-    login = (type: boolean) => async (req: Request, res: Response) => {
+    login = async (req: Request, res: Response) => {
         try {
             const { id, password } = req.body;
 
@@ -138,25 +138,37 @@ class AccountsController {
 
             if (!isCorrect) return res.status(401).send({ message: 'Email or password is incorrect!' });
 
-            const inforAccount = type ? await this.lectureService.findById(ACCOUNT_ID) : await this.studentService.findById(ACCOUNT_ID);
-
-            if (!check(inforAccount, 'EXISTED')) return res.status(401).send({ message: 'please switch API' });
-
-            const { HO_SINH_VIEN, TEN_SINH_VIEN, EMAIL, NGAY_SINH, MaLop, HO_GIANG_VIEN, TEN_GIANG_VIEN } = inforAccount.recordset[0];
-
-            const profile = {
-                firstName: type ? HO_GIANG_VIEN : HO_SINH_VIEN,
-                lastName: type ? TEN_GIANG_VIEN : TEN_SINH_VIEN,
-                email: EMAIL,
-                birth: NGAY_SINH || null,
-                classId: MaLop || null
-            }
-            // tao token
-            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS });
-            res.status(200).send({ token, profile });
+            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS }, "1d");
+            res.status(200).send({ token });
         } catch (error) {
             console.log("TCL: AccountsController -> login -> error", error)
             res.status(200).send({ message: 'Login fail' });
+        }
+    }
+
+    getCredential = async (req: any, res: Response) => {
+        try {
+            const { id, role, iat, exp } = req;
+
+            const checkWho: { [index: string]: boolean } = { lecture: true, student: false }
+
+            const data = checkWho[role] ? await this.lectureService.findById(id) : await this.studentService.findById(id);
+
+            const { MA_GIANG_VIEN, MA_SINH_VIEN, HO_GIANG_VIEN, HO_SINH_VIEN, TEN_GIANG_VIEN, TEN_SINH_VIEN, EMAIL } = data.recordset[0];
+
+            const credential = {
+                accountId: checkWho[role] ? MA_GIANG_VIEN : MA_SINH_VIEN,
+                firstName: checkWho[role] ? HO_GIANG_VIEN : HO_SINH_VIEN,
+                lastName: checkWho[role] ? TEN_GIANG_VIEN : TEN_SINH_VIEN,
+                email: EMAIL,
+                iat,
+                exp
+            }
+
+            res.status(200).send(credential);
+        } catch (error) {
+            console.log(error);
+            res.status(500).send();
         }
     }
 
