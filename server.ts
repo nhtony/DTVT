@@ -15,32 +15,13 @@ process.on("unhandledRejection", e => {
   process.exit(1);
 });
 
-// sql.connect(configDB)
-//   .then((pool: any) => {
-//     sql.db = pool;
-//   })
-//   .then(() => {
-//     const router = express();
-//     const { PORT = 5000 } = process.env;
-//     const server = http.createServer(router);
-//     server.listen(PORT, () =>
-//       console.log(`Server is running http://localhost:${PORT}...`)
-//     );
-//     applyMiddleware(middleware, router);
-//     applyRoutes(routes, router);
-//     // applyMiddleware(errorHandlers, router);
-//   }).catch((err: any) => {
-//     console.log("TCL: err", err)
-//   })
-
-
-  const router = express();
-  const { PORT = 5000 } = process.env;
-  const server = http.createServer(router);
-  server.listen(PORT, () =>
-    console.log(`Server is running http://localhost:${PORT}...`)
-  );
-  applyMiddleware(middleware, router);
-  applyRoutes(routes, router);
+const router = express();
+const { PORT = 5000 } = process.env;
+const server = http.createServer(router);
+server.listen(PORT, () =>
+  console.log(`Server is running http://localhost:${PORT}...`)
+);
+applyMiddleware(middleware, router);
+applyRoutes(routes, router);
 
 
