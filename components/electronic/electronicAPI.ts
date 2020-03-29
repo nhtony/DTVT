@@ -11,11 +11,6 @@ const electronicRoutes = {
         handler: electronicController.getSubjects
     },
     getSubjectsDDT: {
-        path: "/electronic/subjects",
-        method: "get",
-        handler: electronicController.getSubjects
-    },
-    getSubjectsDVT: {
         path: "/electronic/subjects/ddt",
         method: "get",
         handler: electronicController.getSubjectsByMajor('0')

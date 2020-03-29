@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { Controller } from "../../DI/Controller";
-import { check } from '../../common/error';
 import MustSubjectSchema from './mustSubject';
 import MustSubjectService from './mustSubjectService';
 

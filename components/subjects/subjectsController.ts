@@ -6,8 +6,7 @@ import MustSubjectService from '../mustSubject/mustSubjectService';
 import { check } from '../../common/error';
 @Controller()
 class SubjectsController {
-
-
+    
     constructor(protected subjectService: SubjectService, protected mustSubService: MustSubjectService) { }
 
     getSubjects = async (req: Request, res: Response) => {

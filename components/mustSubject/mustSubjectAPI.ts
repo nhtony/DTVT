@@ -16,17 +16,17 @@ const electronicRoutes = {
         handler: electronicController.getMustSubjectById
     },
     createMustSubject: {
-        path: "/must-subjects/create",
+        path: "/must-subjects",
         method: "post",
         handler: electronicController.createMustSubject
     },
     updateMustSubject: {
-        path: "/must-subjects/update",
+        path: "/must-subjects",
         method: "put",
         handler: electronicController.updateMustSubject
     },
     deleteMustSubject: {
-        path: "/must-subjects/delete",
+        path: "/must-subjects",
         method: "delete",
         handler: electronicController.deleteMustSubject
     }

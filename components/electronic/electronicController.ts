@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
 import { Controller } from "../../DI/Controller";
-import ElectronicSchema from './electronicBase';
 import ElectronicService from './electronicService';
-import { check } from '../../common/error';
+import MustSubjectService from '../mustSubject/mustSubjectService';
 
 @Controller()
 class ElectronicController {
 
-    constructor(protected electronicService: ElectronicService) { }
+    constructor(
+        protected electronicService: ElectronicService,
+        protected mustSubjectService: MustSubjectService
+    ) { }
 
     getSubjects = async (req: Request, res: Response) => {
         try {
@@ -35,8 +37,8 @@ class ElectronicController {
         try {
             let { semester } = req.params;
             const result = await this.electronicService.join(majorId);
-            const {recordset} = result;
-            const subjects = recordset.filter((sub:any)=> sub.semester == semester);
+            const { recordset } = result;
+            const subjects = recordset.filter((sub: any) => sub.semester == semester);
             res.status(200).send(subjects);
         } catch (error) {
             console.log("ElectronicController -> getSubjectBySemester -> error", error)
@@ -44,29 +46,33 @@ class ElectronicController {
         }
     }
 
+
     getTreeSubjects = (majorId: string) => async (req: Request, res: Response) => {
         try {
             const result = await this.electronicService.join(majorId);
             const subjects = result.recordset;
-
             const treeSubjects: { [index: string]: any } = {};
 
-            subjects.forEach((element: any) => {
+            const getMustSubs = async (id: string) => {
+                const res = await this.mustSubjectService.findBySubjectId(id);
+                return res.recordset.length ? res.recordset : null;
+            };
 
-                if (treeSubjects[element.semester]) {
-                    treeSubjects[element.semester].subjects.push(element);
-                    treeSubjects[element.semester].allNum += element.number;
-                }
-                else {
-                    treeSubjects[element.semester] = { subjects: [element], allNum: element.number };
-
-                }
-            });
+            await Promise.all(
+                subjects.map(async (sub: any) => {
+                    sub.musts = await getMustSubs(sub.id);
+                    if (treeSubjects[sub.semester]) {
+                        treeSubjects[sub.semester].subjects.push(sub);
+                        treeSubjects[sub.semester].allNum += sub.number;
+                    }
+                    else {
+                        treeSubjects[sub.semester] = { subjects: [sub], allNum: sub.number };
+                    }
+                }));
 
             res.status(200).send(treeSubjects);
         } catch (error) {
             console.log("ElectronicController -> getTreeSubjects -> error", error)
-
             res.status(500).send();
         }
     }
