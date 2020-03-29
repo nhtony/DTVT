@@ -9,7 +9,7 @@ class LecturesController {
 
     constructor(protected lectureService: LectureSevice) { }
 
-    getLeclures = async (req: Request, res: Response) => {
+    getLectures = async (req: Request, res: Response) => {
         try {
             const data = await this.lectureService.findAll();
             res.status(200).send(data.recordset);

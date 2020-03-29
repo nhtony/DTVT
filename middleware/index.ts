@@ -1,5 +1,6 @@
 import { handleAccesControl, handleCors,
     handleBodyRequestParsing,
-    handleCompression } from './common';
+    handleCompression, 
+    handleImageUploadPath } from './common';
 
-export default [handleBodyRequestParsing, handleAccesControl,handleCors,handleCompression];
+export default [handleBodyRequestParsing, handleAccesControl, handleCors, handleCompression, handleImageUploadPath];

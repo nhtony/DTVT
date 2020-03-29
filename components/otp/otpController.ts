@@ -161,7 +161,7 @@ class OTPController {
             const existedOTP = await this.otpService.find(otp, id);
             if (!check(existedOTP, 'EXISTED')) return res.status(500).send({ message: "OTP was expired" });
 
-            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS });
+            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS }, "30s");
 
             res.status(200).send({ token });
         } catch (error) {
