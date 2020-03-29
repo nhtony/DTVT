@@ -1,10 +1,19 @@
 const sql = require('mssql');
 import { Service } from "../../DI/ServiceDecorator";
 import IPost from './postsBase';
+import {DAL} from '../../database/DAL';
+
 @Service()
-class PostService implements IPost {
+class PostService extends DAL implements IPost {
+
+    constructor(){
+        super();
+        const POOL_NAME = 'post';
+        this.createConnectionPool(POOL_NAME);
+    }
+
     async createPost(accountId: string, postContent: string) {
-        return await sql.db.query(`
+        return await this.pool.query(`
         INSERT INTO POST (ACCOUNT_ID, POST_CONTENT) 
         OUTPUT INSERTED.POST_ID AS postId,
                INSERTED.ACCOUNT_ID AS accountId
@@ -12,19 +21,19 @@ class PostService implements IPost {
     }
 
     async updatePost(postId: number, postContent: string) {
-        return await sql.db.query(`UPDATE POST SET POST_CONTENT = '${postContent}' WHERE POST_ID = '${postId}'`);
+        return await this.pool.query(`UPDATE POST SET POST_CONTENT = '${postContent}' WHERE POST_ID = '${postId}'`);
     }
 
     async deletePost(postId: number) {
-        return await sql.db.query(`DELETE FROM POST WHERE POST_ID = '${postId}'`);
+        return await this.pool.query(`DELETE FROM POST WHERE POST_ID = '${postId}'`);
     }
 
     async createMultiImgs(values: Array<string[]>) {
-        return await sql.db.query(`INSERT INTO POST_IMAGE (IMAGE_URL, POST_ID) VALUES (${values.join('),(')})`);
+        return await this.pool.query(`INSERT INTO POST_IMAGE (IMAGE_URL, POST_ID) VALUES (${values.join('),(')})`);
     }
 
     async joinImgs() { // left join có thể có post -> imageUrl: null
-        return await sql.db.query(`
+        return await this.pool.query(`
         SELECT
             p.POST_ID AS postId,
             i.IMAGE_ID AS imageId,
@@ -35,7 +44,7 @@ class PostService implements IPost {
     }
 
     async joinLikes() {
-        return await sql.db.query(`
+        return await this.pool.query(`
         SELECT
             p.POST_ID AS postId,
             l.LIKE_ID AS likeId,
