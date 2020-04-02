@@ -6,7 +6,7 @@ import { check } from '../../common/error';
 
 @Controller()
 class StudentController {
-    constructor(protected stundentService: StudentService) { }
+    constructor(protected stundentService: StudentService) { };
     getStudents = async (req: Request, res: Response) => {
         try {
             const data = await this.stundentService.findAll();
@@ -20,7 +20,7 @@ class StudentController {
     getStudentById = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const data = await this.stundentService.findById(id);
+            const data = await this.stundentService.findBy({ MA_SINH_VIEN: id });
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: StudentController -> getStudentById -> error", error)
@@ -30,7 +30,6 @@ class StudentController {
 
     createStudent = async (req: Request, res: Response) => {
         try {
-
             //Validation
             const validResult = studentSchema.validate(req.body, { abortEarly: false });
 
@@ -39,10 +38,22 @@ class StudentController {
             let { id, firstname, lastname, birth, email, phone, classId, groupId } = req.body;
 
             //Check lecutre đã tồn tại chưa
-            const existedStudent = await this.stundentService.findById(id);
+            const existedStudent = await this.stundentService.findBy({ MA_SINH_VIEN: id });
+
             if (check(existedStudent, 'EXISTED')) return res.status(400).send({ message: "Student existed!" });
 
-            const newStudent = await this.stundentService.create(id, firstname, lastname, birth, email, phone, classId, groupId);
+            const studentObj = {
+                MA_SINH_VIEN: id,
+                HO_SINH_VIEN: firstname,
+                TEN_SINH_VIEN: lastname,
+                NGAY_SINH: birth,
+                MaLop: classId,
+                EMAIL: email,
+                SDT: phone,
+                MaNhom: groupId
+            };
+
+            const newStudent = await this.stundentService.createStudent(studentObj);
 
             if (check(newStudent, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
@@ -50,7 +61,6 @@ class StudentController {
 
         } catch (error) {
             console.log("TCL: StudentController -> createStudent -> error", error)
-
             res.status(500).send({ error: 'Fail!' });
         }
     }
@@ -66,10 +76,20 @@ class StudentController {
             let { id, firstname, lastname, birth, email, phone, classId, groupId } = req.body;
 
             //Check lecutre đã tồn tại chưa
-            const existedStudent = await this.stundentService.findById(id);
+            const existedStudent = await this.stundentService.findBy({ MA_SINH_VIEN: id });
             if (!check(existedStudent, 'EXISTED')) return res.status(400).send({ message: "Student not exist!" });
 
-            const updatedStudent = await this.stundentService.update(id, firstname, lastname, birth, email, phone, classId, groupId);
+            const studentObj = {
+                HO_SINH_VIEN: firstname,
+                TEN_SINH_VIEN: lastname,
+                NGAY_SINH: birth,
+                MaLop: classId,
+                EMAIL: email,
+                SDT: phone,
+                MaNhom: groupId
+            };
+
+            const updatedStudent = await this.stundentService.updateStudent(studentObj, { MA_SINH_VIEN: id });
 
             if (check(updatedStudent, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 

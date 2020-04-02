@@ -54,7 +54,7 @@ class ElectronicController {
             const treeSubjects: { [index: string]: any } = {};
 
             const getMustSubs = async (id: string) => {
-                const res = await this.mustSubjectService.findBySubjectId(id);
+                const res = await this.mustSubjectService.findBy({ MA_MON_HOC: id });
                 return res.recordset.length ? res.recordset : null;
             };
 
@@ -80,7 +80,7 @@ class ElectronicController {
     updateSubjectType = async (req: Request, res: Response) => {
         try {
             let { id, subjectType } = req.body;
-            const result = await this.electronicService.updateSubjectType(id, subjectType);
+            const result = await this.electronicService.updateElectro({ MA_LOAI_MON: subjectType }, { MA_MON_HOC: id });
             res.status(200).send(result.recordset);
         } catch (error) {
             console.log("ElectronicController -> addSubjectType -> error", error)
@@ -91,7 +91,7 @@ class ElectronicController {
     updateSemester = async (req: Request, res: Response) => {
         try {
             let { id, semester } = req.body;
-            const result = await this.electronicService.updateSemester(id, semester);
+            const result = await this.electronicService.updateElectro({ HOC_KY: semester }, { MA_MON_HOC: id });
             res.status(200).send(result.recordset);
         } catch (error) {
             console.log("ElectronicController -> updateSemester -> error", error)

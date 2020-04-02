@@ -27,7 +27,7 @@ class OTPController {
         try {
             const { email, id } = req.body
 
-            const existedAccount = await this.accountService.findById(id);
+            const existedAccount = await this.accountService.findBy({ ACCOUNT_ID: id });
 
             if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: "Account not found" });
 
@@ -36,7 +36,7 @@ class OTPController {
             if (STATUS === 1) return res.status(400).send({ message: "Account is actived" });
 
             if (MA_SINH_VIEN) { // Nếu MSV có tồn tại trong account thì kiểm trong trong bảng sv đã có email chưa
-                const studentEmail = await this.studentService.findEmail(email);
+                const studentEmail = await this.studentService.findBy({EMAIL:email});
                 if (check(studentEmail, 'EXISTED')) return res.status(400).send({ message: "Email is actived" });
             } // Không cần check email tại giảng viên
 
@@ -62,7 +62,7 @@ class OTPController {
         try {
             const { id } = req.body
 
-            const existedAccount = await this.accountService.findById(id);
+            const existedAccount = await this.accountService.findBy({ ACCOUNT_ID: id });
 
             if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: "Account not found" });
 
@@ -70,7 +70,7 @@ class OTPController {
 
             if (STATUS !== 1) return res.status(401).send({ message: 'Account has not actived' });
 
-            const studentEmail = await this.studentService.findEmailById(MA_SINH_VIEN);
+            const studentEmail = await this.studentService.findBy({ MA_SINH_VIEN }, 'EMAIL');
 
             const { EMAIL } = studentEmail.recordset[0] || {};
 
@@ -123,7 +123,7 @@ class OTPController {
         try {
             const { otp, id } = req.body;
 
-            const existedAccount = await this.accountService.findById(id);
+            const existedAccount = await this.accountService.findBy({ ACCOUNT_ID: id });
 
             if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: 'ID is not correct' });
 
@@ -135,7 +135,8 @@ class OTPController {
 
             const { EMAIL } = existedOTP.recordset[0];
 
-            const newEmail = await this.studentService.updateEmailById(EMAIL, id);
+            const newEmail = await this.studentService.updateStudent({ EMAIL }, { MA_SINH_VIEN: id });
+
             if (check(newEmail, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             this.nextReq.code = otp;
@@ -152,7 +153,7 @@ class OTPController {
         try {
             const { otp, id } = req.body;
 
-            const existedAccount = await this.accountService.findById(id);
+            const existedAccount = await this.accountService.findBy({ ACCOUNT_ID: id });
             if (!check(existedAccount, 'EXISTED')) return res.status(400).send({ message: 'ID is not correct' });
 
             const { ACCOUNT_ID, QUYEN, STATUS } = existedAccount.recordset[0];

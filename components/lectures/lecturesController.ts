@@ -21,7 +21,7 @@ class LecturesController {
     getLeclureByID = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const data = await this.lectureService.findById(id);
+            const data = await this.lectureService.findBy({MA_GIANG_VIEN: id});
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: LecturesController -> getLeclureByID -> error", error)
@@ -42,10 +42,20 @@ class LecturesController {
             if (khoaId !== 1) khoaId = 1;
 
             //Check lecutre đã tồn tại chưa
-            const existedLecture = await this.lectureService.findById(id);
+            const existedLecture = await this.lectureService.findBy({MA_GIANG_VIEN:id});
             if (check(existedLecture, 'EXISTED')) return res.status(400).send({ message: "Lecture existed!" });
 
-            const newLecture = await this.lectureService.create(id, firstname, lastname, email, phone, address, khoaId);
+            const objectLecture = {
+                MA_GIANG_VIEN: id,
+                HO_GIANG_VIEN: firstname,
+                TEN_GIANG_VIEN: lastname,
+                EMAIL: email,
+                SDT: phone,
+                DIA_CHI: address,
+                MaKhoa: khoaId
+            };
+
+            const newLecture = await this.lectureService.createLecture(objectLecture);
 
             if (check(existedLecture, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
@@ -70,10 +80,19 @@ class LecturesController {
             if (khoaId !== 1) khoaId = 1;
 
             //Check lecutre đã tồn tại chưa
-            const existedLecture = await this.lectureService.findById(id);
+            const existedLecture = await this.lectureService.findBy({MA_GIANG_VIEN:id});
             if (!check(existedLecture, 'EXISTED')) return res.status(400).send({ message: "Lecture not exist!" });
 
-            const updatedLecture = await this.lectureService.update(id, firstname, lastname, email, phone, address, khoaId);
+            const objectLecture = {
+                HO_GIANG_VIEN: firstname,
+                TEN_GIANG_VIEN: lastname,
+                EMAIL: email,
+                SDT: phone,
+                DIA_CHI: address,
+                MaKhoa: khoaId
+            };
+
+            const updatedLecture = await this.lectureService.updateLecture(objectLecture,{ MA_GIANG_VIEN: id});
 
             if (check(updatedLecture, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
