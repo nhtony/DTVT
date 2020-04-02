@@ -28,8 +28,7 @@ const subjectRoutes = {
     updateSubjectStatus: {
         path: "/subjects/status/update",
         method: "put",
-        // handler: [authenticate, authorize(["admin"]),subjectController.updateSubjectStatus]
-        handler: subjectController.updateSubjectStatus
+        handler: [authenticate, authorize(["admin"]),subjectController.updateSubjectStatus]
     },
     deleteSubject: {
         path: "/subjects",

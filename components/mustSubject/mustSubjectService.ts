@@ -1,39 +1,43 @@
-import IMustSubject from './mustSubjectBase';
 import { Service } from "../../DI/ServiceDecorator";
-import {DAL} from '../../database/DAL';
+import CRUD from "../../base/CRUD";
+
+const NAME = 'MON_TIEN_QUYET';
 
 @Service()
-class MustSubjectService extends DAL implements IMustSubject {
-
+class MustSubjectService extends CRUD {
     constructor(){
         super();
-        const POOL_NAME = 'mustsubject';
-        this.createConnectionPool(POOL_NAME);
+        this.createConnectionPool(NAME);
     }
-    async findAll() {
-        return await this.pool.query('SELECT * FROM MON_TIEN_QUYET');
-    }
-
-    async findById(mustSubId: string) {
-        return await this.pool.query(`SELECT * FROM MON_TIEN_QUYET WHERE MA_MON_TQ = '${mustSubId}'`);
+    async findAll(...select: any) {
+        this.createQueryBuilder(NAME);
+        this.select(select);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-    async findBySubjectId(subId: string) {
-        return await this.pool.query(`SELECT MA_MON_TQ as id,TEN_MON_TQ as name FROM MON_TIEN_QUYET WHERE MA_MON_HOC = '${subId}'`);
+    async findBy(where: any, ...select: any) {
+        this.createQueryBuilder(NAME);
+        this.select(select);
+        this.where(where);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-    async create(mustSubId: string, mustSubName: string, subId: string) {
-        return await this.pool.query(`INSERT INTO MON_TIEN_QUYET (MA_MON_TQ,TEN_MON_TQ,MA_MON_HOC)
-        OUTPUT INSERTED.MA_MON_TQ AS mustSubId,
-               INSERTED.TEN_MON_TQ AS mustSubName,
-               INSERTED.MA_MON_HOC AS subId
-        VALUES ('${mustSubId}','${mustSubName}','${subId}')`);
+    async createMustSubject(obj: any) {
+        this.createQueryBuilder(NAME);
+        this.insert(obj);
+        const sql = this.getQuery();
+        console.log(sql);
+        return await this.pool.query(sql);
     }
 
-    async update(mustSubId: string, mustSubName: string, subId: string) {
-        return await this.pool.query(`UPDATE MON_TIEN_QUYET SET TEN_MON_TQ = '${mustSubName}', 
-        MA_MON_HOC = '${subId}'
-        WHERE MA_MON_TQ = '${mustSubId}'`);
+    async updateMustSubject(obj: any, where: any) {
+        this.createQueryBuilder(NAME);
+        this.update(obj);
+        this.where(where);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
     async delete(mustSubId: string) {

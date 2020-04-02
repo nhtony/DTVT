@@ -21,7 +21,7 @@ class SubjectsController {
     getSubjectID = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const data = await this.subjectService.findById(id);
+            const data = await this.subjectService.findBy({MA_MON_HOC: id});
             res.status(200).send(data.recordset);
         } catch (error) {
             console.log("TCL: LecturesController -> getLeclureByID -> error", error)
@@ -41,10 +41,17 @@ class SubjectsController {
             let { subjectId, subjectName, subjectNumber, status } = req.body;
 
             //Check lecutre đã tồn tại chưa
-            const existedSubject = await this.subjectService.findById(subjectId);
+            const existedSubject = await this.subjectService.findBy({MA_MON_HOC:subjectId});
             if (check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
 
-            const newSubject = await this.subjectService.create(subjectId, subjectName, subjectNumber, status);
+            const subjectObject = {
+                MA_MON_HOC: subjectId,
+                TEN_MON_HOC: subjectName,
+                TIN_CHI: subjectNumber,
+                TRANG_THAI: status
+            };
+
+            const newSubject = await this.subjectService.createSubject(subjectObject);
 
             if (check(newSubject, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
@@ -67,10 +74,16 @@ class SubjectsController {
             let { subjectId, subjectName, subjectNumber } = req.body;
 
             //Check lecutre đã tồn tại chưa
-            const existedSubject = await this.subjectService.findById(subjectId);
+            const existedSubject = await this.subjectService.findBy({MA_MON_HOC:subjectId});
             if (check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
 
-            const updatedLecture = await this.subjectService.update(subjectId, subjectName, subjectNumber);
+            const subjectObject = {
+                TEN_MON_HOC: subjectName,
+                TIN_CHI: subjectNumber,
+                TRANG_THAI: status
+            };
+
+            const updatedLecture = await this.subjectService.updateSubject(subjectObject,{  MA_MON_HOC: subjectId});
 
             if (check(updatedLecture, 'NOT_CHANGE')) return res.status(500).send({ message: 'Fail!' });
 
@@ -85,7 +98,7 @@ class SubjectsController {
     updateSubjectStatus = async (req: Request, res: Response) => {
         try {
             let { id, status } = req.body;
-            const existedSub = await this.subjectService.findById(id);
+            const existedSub = await this.subjectService.findBy({MA_MON_HOC:id});
 
             if (!check(existedSub, 'EXISTED')) return res.status(400).send({ message: 'Subject is not exist !' });
 
@@ -95,7 +108,7 @@ class SubjectsController {
                 return res.status(400).send({ message: 'Status is invalid!' });
             };
 
-            const updatedSub = await this.subjectService.updateStatus(id, status);
+            const updatedSub = await this.subjectService.updateSubject({TRANG_THAI:status},{MA_MON_HOC:id});
 
             if (check(updatedSub, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 

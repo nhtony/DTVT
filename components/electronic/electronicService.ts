@@ -1,54 +1,46 @@
-import IElectronic from './electronicBase';
 import { Service } from "../../DI/ServiceDecorator";
-import {DAL} from '../../database/DAL';
+import CRUD from "../../base/CRUD";
+
+const NAME = 'MON_HOC_DIEN';
 
 @Service()
-class ElectronicService extends DAL implements IElectronic {
-
+class ElectronicService extends CRUD  {
     constructor(){
         super();
-        const POOL_NAME = 'electronic';
-        this.createConnectionPool(POOL_NAME);
+        this.createConnectionPool(NAME);
     }
 
-    async findAll() {
-        return await this.pool.query('SELECT MA_MON_HOC AS subjectId,TEN_MON_HOC AS name,SO_TIN_CHI AS number,HOC_KY AS semester FROM MON_HOC_DIEN_TU');
+    async findAll(...select: any) {
+        this.createQueryBuilder(NAME);
+        this.select(select);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-    async findById(subjectId: string) {
-        return await this.pool.query(`SELECT * FROM MON_HOC_DIEN_TU WHERE LANE_ID = '${subjectId}'`);
+    async findBy(where: any, ...select: any) {
+        this.createQueryBuilder(NAME);
+        this.select(select);
+        this.where(where);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-
-    async create(subjectId: string, groupMajorId: string, majorId: string, specMajorId: string) {
-        return await this.pool.query(`INSERT INTO MON_HOC_DIEN_TU (MA_MON_HOC,MA_NHOM_NGANH,MA_NGANH,MA_CHUYEN_NGANH)
-        OUTPUT INSERTED.MA_MON_HOC AS subjectId,
-               INSERTED.MA_NHOM_NGANH AS groupMajorId,
-               INSERTED.MA_NGANH AS majorId,
-               INSERTED.MA_CHUYEN_NGANH AS specMajorId
-        VALUES ('${subjectId}','${groupMajorId}','${majorId}','${specMajorId}')`);
+    async createElectro(obj: any) {
+        this.createQueryBuilder(NAME);
+        this.insert(obj);
+        const sql = this.getQuery();
+        console.log(sql);
+        return await this.pool.query(sql);
     }
 
-    async update(subjectId: string, groupMajorId: string, majorId: string, specMajorId: string) {
-        return await this.pool.query(`UPDATE MON_HOC_DIEN_TU SET MA_NHOM_NGANH = '${groupMajorId}', 
-            MA_NGANH='${majorId}', 
-            MA_CHUYEN_NGANH='${specMajorId}' 
-        WHERE MA_MON_HOC = '${subjectId}'`);
+    async updateElectro(obj: any, where: any) {
+        this.createQueryBuilder(NAME);
+        this.update(obj);
+        this.where(where);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-    async updateSubjectType(id: string, subjectType: string) {
-        return await this.pool.query(`UPDATE MON_HOC_DIEN_TU SET LOAI_MON='${subjectType}' 
-        OUTPUT INSERTED.MA_MON_HOC AS subjectId,
-               INSERTED.LOAI_MON AS subjectType
-        WHERE MA_MON_HOC = '${id}'`);
-    }
-
-    async updateSemester(id: string, semester: string) {
-        return await this.pool.query(`UPDATE MON_HOC_DIEN_TU SET HOC_KY='${semester}' 
-        OUTPUT INSERTED.MA_MON_HOC AS subjectId,
-               INSERTED.HOC_KY AS semester
-        WHERE MA_MON_HOC = '${id}'`);
-    }
 
     async delete(subjectId: string) {
         return await this.pool.query(`DELETE FROM MON_HOC_DIEN_TU WHERE MA_MON_HOC = '${subjectId}'`);
