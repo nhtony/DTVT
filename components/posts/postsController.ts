@@ -5,6 +5,7 @@ import PostService from './postsService';
 import LectureService from '../lectures/lecturesService';
 import StudentService from '../students/studentsService';
 import { check } from '../../common/error';
+import fs from "fs";
 
 @Controller()
 class PostsController {
@@ -23,7 +24,8 @@ class PostsController {
      */
 
     private nextReq = {
-        postId: ''
+        postId: '',
+        newPost: '',
     };
 
     constructor(
@@ -34,38 +36,50 @@ class PostsController {
 
     getPosts = async (req: ReqType, res: Response) => {
         try {
-            const joinImgs = await this.postService.joinImgs();
+            const page = parseInt(req.query.page)
+            const limit = parseInt(req.query.limit)
+            
+            const startIndex = (page - 1) * limit
+
+            const firstImgs = await this.postService.firstImgs();
             const joinLikes = await this.postService.joinLikes();
+            const countLikes = await this.postService.countInteract();
 
             const splitImage: { [index: string]: any } = {};
-            const splitLike: { [index: string]: any } = {};
             const isLike: { [index: string]: boolean } = {};
+            const numLikes: { [index: string]: number } = {};
 
-            joinImgs.recordset.map((item: any) => {
+            firstImgs.recordset.map((item: any) => {
                 const image = {
                     id: item.imageId,
                     imageUrl: item.imageUrl
                 }
-                splitImage[item.postId] ? splitImage[item.postId].push(image) : splitImage[item.postId] = image.id ? [image] : null;
+                splitImage[item.postId] = image.id ? image : null;
             });
 
-            joinLikes.recordset.map((item: any) => {
-                const like = {
-                    id: item.likeId,
-                    accountName: item.accountName
+            for (let item of joinLikes.recordset) {
+                if (req.id === item.accountId) {
+                    isLike[item.postId] = true;
                 }
-                splitLike[item.postId] ? splitLike[item.postId].push(like) : splitLike[item.postId] = like.id ? [like] : null;
-                isLike[item.postId] = req.id === item.accountId;
-            })
+            }
 
-            const getAllPosts = await this.postService.joinLecture();
+            for (let item of countLikes.recordset) {
+                numLikes[item.postId] = item.numInteract
+            }
+
+            const getAllPosts = await this.postService.getPosts(startIndex, limit);
 
             const resultPosts = getAllPosts.recordset.map((post: any) => {
                 post.id = post.id.toString();
-                return { ...post, images: splitImage[post.id], liked: splitLike[post.id], isLike: isLike[post.id] }
+                return {
+                    ...post,
+                    firstImg: splitImage[post.id],
+                    numInteract: numLikes[post.id] ? numLikes[post.id] : 0,
+                    isLike: isLike[post.id] ? true : false
+                }
             })
 
-            res.status(200).send(resultPosts.reverse());
+            res.status(200).send(resultPosts);
         } catch (error) {
             console.log("PostsController -> getPosts -> error", error)
             res.status(500).send();
@@ -80,17 +94,19 @@ class PostsController {
 
             const { postContent } = req.body;
 
-            const newPost = await this.postService.createPost(req.id, postContent);
+            const newPost = await this.postService.createPost(req.id, req.files.length, postContent);
 
             if (check(newPost, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            this.nextReq.postId = newPost.recordset[0].postId;
+            const postRecord = newPost.recordset[0];
 
-            console.log(req.files.length)
+            this.nextReq.newPost = postRecord;
 
-            req.files.length > 0 ? next() : res.status(200).send({ message: 'Thành công!' });
+            this.nextReq.postId = postRecord.postId;
+
+            req.files.length > 0 ? next() : res.status(200).send(postRecord);
         } catch (error) {
-            console.log("TCL: LecturesController -> getLeclureByID -> error", error)
+            console.log("TCL: PostsController -> createPost -> error", error)
             res.status(500).send({ error: 'Fail!' });
         }
     }
@@ -105,16 +121,35 @@ class PostsController {
 
             if (check(saveImages, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ message: 'Thành công!' });
+            res.status(200).send(this.nextReq.newPost);
         } catch (error) {
             console.log("PostsController -> uploadImages -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    deletePost = async (req: Request, res: Response) => {
+        try {
+            const { postId, haveImgs, haveInteract } = req.body;
+
+            const postDel = await this.postService.deletePost(postId, haveImgs, haveInteract);
+
+            if (check(postDel, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
+
+            haveImgs && postDel.recordset.forEach((item: any) => {
+                fs.unlinkSync(item.imgUrl)
+            });
+
+            res.status(200).send({ message: `Đã xóa thành công!` });
+        } catch (error) {
+            console.log("PostsController -> deletePost -> error", error)
             res.status(500).send();
         }
     }
 
     interactPost = async (req: ReqType, res: Response) => {
         try {
-            const { postId, status, type } = req.body;
+            const { postId, status } = req.body;
 
             const { id, role } = req;
 
@@ -127,28 +162,49 @@ class PostsController {
             const fullName = checkWho[role] ? HO_GIANG_VIEN + " " + TEN_GIANG_VIEN : HO_SINH_VIEN + " " + TEN_SINH_VIEN;
 
             const statusObj: { [index: string]: StatusObjType } = {
-                do: {
+                like: {
                     service: this.postService.createInteract,
                     check: "NOT_CHANGED",
                 },
-                un: {
+                unlike: {
                     service: this.postService.deleteInteract,
                     check: "NOT_DELETED",
                 },
             };
 
-            const table: { [index: string]: string } = {
-                like: "POST_LIKE",
-                save: "POST_SAVE"
-            }
-
-            const handleInteract = await statusObj[status].service(table[type], postId, id, fullName)
+            const handleInteract = await statusObj[status].service(postId, id, fullName)
 
             if (check(handleInteract, statusObj[status].check)) return res.status(500).send({ message: 'Fail!' });
 
-            res.status(200).send({ message: `${status + type} thành công!` });
+            res.status(200).send({ message: `${status} thành công!` });
         } catch (error) {
-            console.log("PostsController -> likePost -> error", error)
+            console.log("PostsController -> interactPost -> error", error)
+            res.status(500).send();
+        }
+    }
+    
+    getInteracts = async (req: ReqType, res: Response) => {
+        try {
+            const { postId } = req.query;
+
+            const interacts = await this.postService.getInteracts(postId)
+            
+            res.status(200).send(interacts.recordset);
+        } catch (error) {
+            console.log("PostsController -> getImgs -> error", error)
+            res.status(500).send();
+        }
+    }
+
+    getImgs = async (req: ReqType, res: Response) => {
+        try {
+            const { postId } = req.query;
+
+            const imgs = await this.postService.getImgs(postId)
+            
+            res.status(200).send(imgs.recordset);
+        } catch (error) {
+            console.log("PostsController -> getImgs -> error", error)
             res.status(500).send();
         }
     }
@@ -167,14 +223,21 @@ type FilesType = {
     path: string;
 }
 
+type QueryType = {
+    page: string;
+    limit: string;
+    postId: string;
+}
+
 type ReqType = {
     id: string;
     role: string;
     files: FilesType[];
     body: BodyType;
+    query: QueryType;
 }
 
 type StatusObjType = {
-    service: (table: string, postId: string, accountId: string, fullName: string) => {};
+    service: (postId: string, accountId: string, fullName: string) => {};
     check: string;
 }

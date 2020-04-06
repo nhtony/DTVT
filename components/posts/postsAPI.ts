@@ -11,6 +11,11 @@ const postRoutes = {
         method: "post",
         handler: [authenticate, authorize(["lecture"]), uploadImages.any(), postController.createPost, postController.uploadImages]
     },
+    delPost: {
+        path: "/posts",
+        method: "delete",
+        handler: [authenticate, postController.deletePost]
+    },
     getPosts: {
         path: "/posts",
         method: "get",
@@ -20,6 +25,16 @@ const postRoutes = {
         path: "/posts/interact",
         method: "post",
         handler: [authenticate, postController.interactPost]
+    },
+    getInteracts: {
+        path: "/interacts",
+        method: "get",
+        handler: [authenticate, postController.getInteracts]
+    },
+    getImgs: {
+        path: "/images",
+        method: "get",
+        handler: [authenticate, postController.getImgs]
     }
 }
 
