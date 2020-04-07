@@ -142,19 +142,13 @@ class AccountsController {
 
             const { PASSWORD, ACCOUNT_ID, QUYEN, STATUS } = existedAccount.recordset[0];
 
-            const student = await this.studentService.findBy({ MA_SINH_VIEN: id }, 'MaLop');
-
-            const { MaLop } = student.recordset[0];
-
-            const classId = MaLop.slice(0, 3);
-
             if (STATUS !== 1) return res.status(401).send({ message: 'Account has not actived' });
 
             const isCorrect = await bcrypt.compare(password, PASSWORD);
 
             if (!isCorrect) return res.status(401).send({ message: 'Email or password is incorrect!' });
 
-            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS, classId }, "1d");
+            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS }, "1d");
             res.status(200).send({ token });
         } catch (error) {
             console.log("TCL: AccountsController -> login -> error", error)
