@@ -30,15 +30,10 @@ const accountRoutes = {
         method: "post",
         handler: accountController.createAccount(true)
     },
-    loginLecture: {
-        path: "/accounts/lecture/login",
+    login: {
+        path: "/accounts/login",
         method: "post",
-        handler: accountController.login(false)
-    },
-    loginStudent: {
-        path: "/accounts/student/login",
-        method: "post",
-        handler: accountController.login(true)
+        handler: accountController.login
     },
     getCredential: {
         path: "/credential",
