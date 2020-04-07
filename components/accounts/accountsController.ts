@@ -132,7 +132,7 @@ class AccountsController {
         }
     }
 
-    login = async (req: Request, res: Response) => {
+    login = (isStudent:boolean) => async (req: Request, res: Response) => {
         try {
             const { id, password } = req.body;
 
@@ -148,11 +148,18 @@ class AccountsController {
 
             if (!isCorrect) return res.status(401).send({ message: 'Email or password is incorrect!' });
 
-            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS }, "1d");
+            let classId = null;
+
+            if(isStudent){
+                const result = await this.studentService.findBy({MA_SINH_VIEN:id},'MaLop');
+                classId = result.recordset[0].MaLop;
+            }    
+
+            const token = signToken({ accountId: ACCOUNT_ID, role: QUYEN, status: STATUS , classId}, "1d");
             res.status(200).send({ token });
         } catch (error) {
             console.log("TCL: AccountsController -> login -> error", error)
-            res.status(200).send({ message: 'Login fail' });
+            res.status(500).send({ message: 'Login fail' });
         }
     }
 
