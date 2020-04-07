@@ -5,8 +5,6 @@ import middleware from './middleware'
 import routes from './routes';
 
 import socketIO from './services/socketIO';
-const dotenv = require('dotenv');
-const sql = require('mssql');
 const IO = require("socket.io");
 
 process.on("uncaughtException", e => {
@@ -22,12 +20,14 @@ process.on("unhandledRejection", e => {
 const router = express();
 const { PORT = 5000 } = process.env;
 const server = http.createServer(router);
-server.listen(PORT, () =>
+server.listen(PORT, () => {
+  socketIO(IO(server))
   console.log(`Server is running http://localhost:${PORT}...`)
-);
-socketIO(IO(server));
+});
+
 applyMiddleware(middleware, router);
 applyRoutes(routes, router);
+
 
 
 

@@ -1,16 +1,15 @@
-const sql = require('mssql');
 import { Service } from "../../DI/ServiceDecorator";
 import IPost from './postsBase';
-import {DAL} from '../../database/DAL';
+import CRUD from "../../base/CRUD";
+
+const NAME = 'POST';
 
 @Service()
-
-class PostService extends DAL implements IPost {
+class PostService extends CRUD implements IPost {
 
     constructor(){
         super();
-        const POOL_NAME = 'post';
-        this.createConnectionPool(POOL_NAME);
+        this.createConnectionPool(NAME);
     }
 
    async createPost(accountId: string, numImg: number, postContent: string) {
@@ -39,7 +38,7 @@ class PostService extends DAL implements IPost {
     }
 
 
-    async joinImgs() { // left join có thể có post -> imageUrl: null
+    async firstImgs() { // left join có thể có post -> imageUrl: null
         return await this.pool.query(`
          SELECT
             p.POST_ID AS postId,
@@ -55,7 +54,7 @@ class PostService extends DAL implements IPost {
     }
 
     async getImgs(postId: string) {
-        return await sql.db.query(`
+        return await this.pool.query(`
         WITH img AS (
             SELECT IMAGE_ID, IMAGE_URL, ROW_NUMBER() OVER (ORDER BY IMAGE_ID) numRow
             FROM POST_IMAGE
@@ -79,7 +78,7 @@ class PostService extends DAL implements IPost {
     }
 
     async getPosts(startIndex: number, limit: number) {
-        return await sql.db.query(`
+        return await this.pool.query(`
         SELECT 
             p.POST_ID AS id, 
             p.POST_CONTENT AS postContent,
@@ -97,14 +96,14 @@ class PostService extends DAL implements IPost {
     }
     
     async createInteract(postId: string, accountId: string, fullName: string) {
-        return await sql.db.query(`
+        return await this.pool.query(`
         INSERT INTO POST_LIKE (POST_ID, ACCOUNT_ID, FULL_NAME)
         VALUES ('${postId}', '${accountId}', N'${fullName}')
         `)
     }
 
     async deleteInteract(postId: string, accountId: string) {
-        return await sql.db.query(`
+        return await this.pool.query(`
         DELETE FROM POST_LIKE 
         WHERE POST_ID = '${postId}'
             AND ACCOUNT_ID = '${accountId}'
@@ -112,7 +111,7 @@ class PostService extends DAL implements IPost {
     }
 
     async countInteract() {
-        return await sql.db.query(`
+        return await this.pool.query(`
         SELECT POST_ID AS postId, COUNT(*) AS numInteract
         FROM POST_LIKE
         GROUP BY POST_ID
@@ -120,7 +119,7 @@ class PostService extends DAL implements IPost {
     }
 
     async getInteracts(postId: string) {
-        return await sql.db.query(`SELECT LIKE_ID AS likeId, FULL_NAME AS accountName FROM POST_LIKE WHERE POST_ID = '${postId}' `)
+        return await this.pool.query(`SELECT LIKE_ID AS likeId, FULL_NAME AS accountName FROM POST_LIKE WHERE POST_ID = '${postId}' `)
     }
 }
 
