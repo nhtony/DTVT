@@ -1,28 +1,48 @@
-const sql = require('mssql');
-import ISubject from './subjectsBase';
 import { Service } from "../../DI/ServiceDecorator";
+import CRUD from "../../base/CRUD";
+
+const NAME = 'MON_HOC';
 
 @Service()
-class LectureService implements ISubject {
+class SubjectService extends CRUD {
 
-    async findAll() {
-        return await sql.db.query('SELECT * FROM MON_HOC');
+    constructor(){
+        super();
+        this.createConnectionPool(NAME);
     }
 
-    async findById(id: string) {
-        return await sql.db.query(`SELECT * FROM MON_HOC WHERE MA_MON_HOC = '${id}'`);
+    async findAll(...select: any) {
+        this.createQueryBuilder(NAME);
+        this.select(select);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-    async create(subjectId: string, name: string, number: string, required: number, majorId: string) {
-        return await sql.db.query(`INSERT INTO MON_HOC (MA_MON_HOC,TEN_MON_HOC,SO_TIN_CHI,TIEN_QUYET,MA_NGANH) VALUES ('${subjectId}','${name}','${number}','${required}','${majorId}')`);
+    async findBy(where: any, ...select: any) {
+        this.createQueryBuilder(NAME);
+        this.select(select);
+        this.where(where);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-    async update(subjectId: string, name: string, number: string, required: number, majorId: string) {
-        return await sql.db.query(`UPDATE MON_HOC SET  TEN_MON_HOC = '${name}',SO_TIN_CHI = '${number}',TIEN_QUYET = '${required}', MA_NGANH='${majorId}' WHERE MA_MON_HOC = '${subjectId}'`);
+    async createSubject(obj: any) {
+        this.createQueryBuilder(NAME);
+        this.insert(obj);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
+    }
+
+    async updateSubject(obj: any, where: any) {
+        this.createQueryBuilder(NAME);
+        this.update(obj);
+        this.where(where);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
     async delete(id: string) {
-        return await sql.db.query(`DELETE FROM MON_HOC WHERE MA_MON_HOC = '${id}' `);
+        return await this.pool.query(`DELETE FROM MON_HOC WHERE MA_MON_HOC = '${id}' `);
     }
 }
-export default LectureService;
+export default SubjectService;

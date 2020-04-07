@@ -1,10 +1,20 @@
 const sql = require('mssql');
 import { Service } from "../../DI/ServiceDecorator";
 import IPost from './postsBase';
+import {DAL} from '../../database/DAL';
+
 @Service()
-class PostService implements IPost {
-    async createPost(accountId: string, numImg: number, postContent: string) {
-        return await sql.db.query(`
+
+class PostService extends DAL implements IPost {
+
+    constructor(){
+        super();
+        const POOL_NAME = 'post';
+        this.createConnectionPool(POOL_NAME);
+    }
+
+   async createPost(accountId: string, numImg: number, postContent: string) {
+        return await this.pool.query(`
         INSERT INTO POST (ACCOUNT_ID, COUNT_IMAGES, POST_CONTENT) 
             OUTPUT INSERTED.POST_ID AS postId, SYSUTCDATETIME() AS createdAt
             VALUES ('${accountId}', '${numImg}', N'${postContent}')
@@ -12,11 +22,12 @@ class PostService implements IPost {
     }
 
     async updatePost(postId: number, postContent: string) {
-        return await sql.db.query(`UPDATE POST SET POST_CONTENT = '${postContent}' WHERE POST_ID = '${postId}'`);
+        return await this.pool.query(`UPDATE POST SET POST_CONTENT = '${postContent}' WHERE POST_ID = '${postId}'`);
     }
 
+
     async deletePost(postId: number, haveImgs: boolean, haveInteract: boolean) {
-        return await sql.db.query(`
+        return await this.pool.query(`
         ${haveImgs ? `DELETE FROM POST_IMAGE OUTPUT DELETED.IMAGE_URL AS imgUrl WHERE POST_ID = '${postId}'` : ''}
         ${haveInteract ? `DELETE FROM POST_LIKE WHERE POST_ID = '${postId}'` : ''}
         DELETE FROM POST WHERE POST_ID = '${postId}'
@@ -24,12 +35,13 @@ class PostService implements IPost {
     }
 
     async createMultiImgs(values: Array<string[]>) {
-        return await sql.db.query(`INSERT INTO POST_IMAGE (IMAGE_URL, POST_ID) VALUES (${values.join('),(')})`);
+        return await this.pool.query(`INSERT INTO POST_IMAGE (IMAGE_URL, POST_ID) VALUES (${values.join('),(')})`);
     }
 
-    async firstImgs() {
-        return await sql.db.query(`
-        SELECT
+
+    async joinImgs() { // left join có thể có post -> imageUrl: null
+        return await this.pool.query(`
+         SELECT
             p.POST_ID AS postId,
             i.IMAGE_ID AS imageId,
             i.IMAGE_URL AS imageUrl
@@ -56,7 +68,7 @@ class PostService implements IPost {
     }
 
     async joinLikes() {
-        return await sql.db.query(`
+        return await this.pool.query(`
         SELECT
             p.POST_ID AS postId,
             l.ACCOUNT_ID AS accountId

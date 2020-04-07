@@ -1,42 +1,52 @@
-const sql = require('mssql');
-import {Service} from "../../DI/ServiceDecorator";
-import IAccount from './accountsBase';
+import { Service } from "../../DI/ServiceDecorator";
+import CRUD from "../../base/CRUD";
+
+const NAME = 'ACCOUNT';
+
 @Service()
-class AccountService implements IAccount {
-    async findAll() {
-        return await sql.db.query('SELECT * FROM ACCOUNT');
+class AccountService extends CRUD {
+
+    constructor() {
+        super();
+        this.createConnectionPool(NAME);
     }
 
-    async findById(id: string) {
-        return await sql.db.query(`SELECT ACCOUNT_ID,QUYEN,STATUS,PASSWORD,MA_SINH_VIEN,MA_GIANG_VIEN FROM ACCOUNT WHERE ACCOUNT_ID = '${id}'`);
+    async findAll(...select: any) {
+        this.createQueryBuilder(NAME);
+        this.select(select);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-    async findByIdLecture(id: string) {
-        return await sql.db.query(`SELECT ACCOUNT_ID,STATUS FROM ACCOUNT WHERE MA_GIANG_VIEN = '${id}'`);
+    async findBy(where: any, ...select: any) {
+        this.createQueryBuilder(NAME);
+        this.select(select);
+        this.where(where);
+        const sql = this.getQuery(); 
+        return await this.pool.query(sql);
     }
 
-    async findByIdStudent(id: string) {
-        return await sql.db.query(`SELECT ACCOUNT_ID,STATUS FROM ACCOUNT WHERE MA_SINH_VIEN = '${id}'`);
+    async create(obj:any) {
+        this.createQueryBuilder(NAME);
+        this.insert(obj);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
-    async createWithIdLecture(hashPassword: string, role: string, id: string) {
-        return await sql.db.query(`INSERT INTO ACCOUNT (PASSWORD,QUYEN,MA_GIANG_VIEN,ACCOUNT_ID) VALUES ('${hashPassword}','${role}','${id}','${id}')`);
-    }
-
-    async createWithIdStudent(hashPassword: string, role: string, id: string) {
-        return await sql.db.query(`INSERT INTO ACCOUNT (PASSWORD,QUYEN,MA_SINH_VIEN,ACCOUNT_ID) VALUES ('${hashPassword}','${role}','${id}','${id}')`);
+    async updateAccount(obj: any, where: any) {
+        this.createQueryBuilder(NAME);
+        this.update(obj);
+        this.where(where);
+        const sql = this.getQuery();
+        return await this.pool.query(sql);
     }
 
     async updateStatusById(id: string, status: string) {
-        let stt:number = 0;
-        if(status === 'enable') stt = 1;
-        else if(status === 'disable') stt= 0;
-        return await sql.db.query(`UPDATE ACCOUNT SET STATUS = '${stt}' WHERE MA_SINH_VIEN = '${id}' OR MA_GIANG_VIEN = '${id}'`);
+        let stt: number = 0;
+        if (status === 'enable') stt = 1;
+        else if (status === 'disable') stt = 0;
+        return await this.pool.query(`UPDATE ACCOUNT SET STATUS = '${stt}' WHERE MA_SINH_VIEN = '${id}' OR MA_GIANG_VIEN = '${id}'`);
     };
-
-    async updatePassword(id: string, password: string) {
-        return await sql.db.query(`UPDATE ACCOUNT SET PASSWORD = '${password}' WHERE MA_SINH_VIEN = '${id}' OR MA_GIANG_VIEN = '${id}'`);
-    }
 }
 
 export default AccountService;

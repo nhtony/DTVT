@@ -5,27 +5,32 @@ import { Injector } from '../../DI/Injector';
 const subjectController = Injector.resolve<SubjectController>(SubjectController);
 
 const subjectRoutes = {
-    getLecutures: {
+    getSubjects: {
         path: "/subjects",
         method: "get",
         handler: subjectController.getSubjects
     },
-    getLecture: {
+    getSubject: {
         path: "/subjects/:id",
         method: "get",
         handler: subjectController.getSubjectID
     },
-    createLecture: {
+    createSubject: {
         path: "/subjects",
         method: "post",
         handler: [authenticate, authorize(["admin"]),subjectController.createSubject]
     },
-    updateLecture: {
+    updateSubject: {
         path: "/subjects",
         method: "put",
         handler: [authenticate, authorize(["admin"]),subjectController.updateSubject]
     },
-    deleteLecture: {
+    updateSubjectStatus: {
+        path: "/subjects/status/update",
+        method: "put",
+        handler: [authenticate, authorize(["admin"]),subjectController.updateSubjectStatus]
+    },
+    deleteSubject: {
         path: "/subjects",
         method: "delete",
         handler: [authenticate, authorize(["admin"]),subjectController.deleteSubject]

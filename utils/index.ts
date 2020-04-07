@@ -20,7 +20,7 @@ type Handler = (
 type Route = {
   path: string;
   method: string;
-  handler: Handler | Handler[];
+  handler: Handler | Handler[] | any;
 };
 
 export const applyRoutes = (routes: Route[], router: Router) => {

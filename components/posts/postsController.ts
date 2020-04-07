@@ -155,7 +155,7 @@ class PostsController {
 
             const checkWho: { [index: string]: boolean } = { lecture: true, student: false }
 
-            const account = checkWho[role] ? await this.lectureService.findById(id) : await this.studentService.findById(id);
+            const account = checkWho[role] ? await this.lectureService.findBy({ACCOUNT_ID: id}) : await this.studentService.findBy({ACCOUNT_ID:id});
 
             const { HO_GIANG_VIEN, HO_SINH_VIEN, TEN_GIANG_VIEN, TEN_SINH_VIEN } = account.recordset[0];
 
