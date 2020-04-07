@@ -1,13 +1,16 @@
 interface IPost {
-    createPost: (accountId: string, postContent: string) => {}
+    createPost: (accountId: string, numImg: number, postContent: string) => {}
     updatePost: (postId: number, postContent: string) => {};
-    deletePost: (postId: number) => {};
+    deletePost: (postId: number, haveImgs: boolean, haveInteract: boolean) => {};
     createMultiImgs: (values: Array<string[]>) => {};
-    joinImgs: () => {};
+    firstImgs: () => {};
+    getImgs: (postId: string) => {};
     joinLikes: () => {};
-    joinLecture: () => {};
-    createInteract: (table: string, postId: string, accountId: string, fullName: string) => {}
-    deleteInteract: (table: string, postId: string, accountId: string) => {}
+    getPosts: (startIndex: number, limit: number) => {};
+    createInteract: (postId: string, accountId: string, fullName: string) => {}
+    deleteInteract: (postId: string, accountId: string) => {}
+    countInteract: () => {};
+    getInteracts: (postId: string) => {};
 };
 
 export default IPost;
