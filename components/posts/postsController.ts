@@ -25,7 +25,7 @@ class PostsController {
 
     private nextReq = {
         postId: '',
-        newPost: '',
+        newPost: null,
     };
 
     constructor(
@@ -100,11 +100,17 @@ class PostsController {
 
             const postRecord = newPost.recordset[0];
 
-            this.nextReq.newPost = postRecord;
+            const account = await this.lectureService.findBy({MA_GIANG_VIEN: req.id}, "HO_GIANG_VIEN", "TEN_GIANG_VIEN")
+
+            const { HO_GIANG_VIEN, TEN_GIANG_VIEN } = account.recordset[0];
+
+            const createdBy = HO_GIANG_VIEN + " " + TEN_GIANG_VIEN;
+
+            this.nextReq.newPost = {...postRecord, createdBy};
 
             this.nextReq.postId = postRecord.postId;
 
-            req.files.length > 0 ? next() : res.status(200).send(postRecord);
+            req.files.length > 0 ? next() : res.status(200).send(this.nextReq.newPost);
         } catch (error) {
             console.log("TCL: PostsController -> createPost -> error", error)
             res.status(500).send({ error: 'Fail!' });

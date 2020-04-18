@@ -15,7 +15,9 @@ class PostService extends CRUD implements IPost {
    async createPost(accountId: string, numImg: number, postContent: string) {
         return await this.pool.query(`
         INSERT INTO POST (ACCOUNT_ID, COUNT_IMAGES, POST_CONTENT) 
-            OUTPUT INSERTED.POST_ID AS postId, SYSUTCDATETIME() AS createdAt
+            OUTPUT INSERTED.POST_ID AS postId, 
+                   SYSUTCDATETIME() AS createdAt,
+                   INSERTED.COUNT_IMAGES AS numImgs
             VALUES ('${accountId}', '${numImg}', N'${postContent}')
         `)
     }
