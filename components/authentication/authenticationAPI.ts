@@ -1,14 +1,19 @@
-import AccountsController from '../accounts/accountsController';
+import AccountsController from './authenticationController';
 import { Injector } from '../../DI/Injector';
 
-const accountController = Injector.resolve<AccountsController>(AccountsController);
+const authController = Injector.resolve<AccountsController>(AccountsController);
 
 const authenRoutes = {
     login: {
         path: "/auth/login",
         method: "post",
-        handler: accountController.login
+        handler: authController.login
     },
+    loginAdmin: {
+        path: "/auth/login/admin",
+        method: "post",
+        handler: authController.loginAdmin
+    }
 };
 
 const authenAPIs = Object.values(authenRoutes);
