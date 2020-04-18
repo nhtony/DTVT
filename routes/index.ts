@@ -8,6 +8,7 @@ import mustSubjetAPIs from '../components/mustSubject/mustSubjectAPI';
 import telecomunicationAPIs from '../components/telecomunication/telecomunicationAPI';
 import electricityAPIs from '../components/electricity/electricityAPI';
 import electronicAPIs from '../components/electronic/electronicAPI';
+import authenAPIs from '../components/authentication/authenticationAPI';
 
 export default [
     ...accountAPIs, 
@@ -20,6 +21,7 @@ export default [
     ...postsAPIs,
     ...electricityAPIs,
     ...electricityAPIs,
-   ...telecomunicationAPIs
+   ...telecomunicationAPIs,
+   ...authenAPIs
 ];
 
