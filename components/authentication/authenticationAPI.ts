@@ -5,7 +5,7 @@ const accountController = Injector.resolve<AccountsController>(AccountsControlle
 
 const authenRoutes = {
     login: {
-        path: "/accounts/login",
+        path: "/auth/login",
         method: "post",
         handler: accountController.login
     },
