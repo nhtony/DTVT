@@ -26,11 +26,6 @@ const postRoutes = {
         method: "post",
         handler: [authenticate, postController.interactPost]
     },
-    getInteracts: {
-        path: "/interacts",
-        method: "get",
-        handler: [authenticate, postController.getInteracts]
-    },
     getImgs: {
         path: "/images",
         method: "get",

@@ -96,10 +96,10 @@ class PostService extends CRUD implements IPost {
         `)
     }
     
-    async createInteract(postId: string, accountId: string, fullName: string) {
+    async createInteract(postId: string, accountId: string) {
         return await this.pool.query(`
-        INSERT INTO POST_LIKE (POST_ID, ACCOUNT_ID, FULL_NAME)
-        VALUES ('${postId}', '${accountId}', N'${fullName}')
+        INSERT INTO POST_LIKE (POST_ID, ACCOUNT_ID)
+        VALUES ('${postId}', '${accountId}')
         `)
     }
 
@@ -117,10 +117,6 @@ class PostService extends CRUD implements IPost {
         FROM POST_LIKE
         GROUP BY POST_ID
         `)
-    }
-
-    async getInteracts(postId: string) {
-        return await this.pool.query(`SELECT LIKE_ID AS likeId, FULL_NAME AS accountName FROM POST_LIKE WHERE POST_ID = '${postId}' `)
     }
 }
 
