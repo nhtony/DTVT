@@ -9,20 +9,6 @@ import fs from "fs";
 
 @Controller()
 class PostsController {
-
-    /**
-     * postId => image(postId)
-     * post = [
-     * {
-     * postId: 
-     * accountId:
-     * postContent:
-     * imageUrl: []
-     * liked: [accountId]
-     * isLike: check req.id từ token xem có thuộc trong mảng liked hay không?
-     * }]
-     */
-
     private nextReq = {
         postId: '',
         newPost: null,
@@ -38,7 +24,7 @@ class PostsController {
         try {
             const page = parseInt(req.query.page)
             const limit = parseInt(req.query.limit)
-            
+
             const startIndex = (page - 1) * limit
 
             const firstImgs = await this.postService.firstImgs();
@@ -100,13 +86,13 @@ class PostsController {
 
             const postRecord = newPost.recordset[0];
 
-            const account = await this.lectureService.findBy({MA_GIANG_VIEN: req.id}, "HO_GIANG_VIEN", "TEN_GIANG_VIEN")
+            const account = await this.lectureService.findBy({ MA_GIANG_VIEN: req.id }, "HO_GIANG_VIEN", "TEN_GIANG_VIEN")
 
             const { HO_GIANG_VIEN, TEN_GIANG_VIEN } = account.recordset[0];
 
             const createdBy = HO_GIANG_VIEN + " " + TEN_GIANG_VIEN;
 
-            this.nextReq.newPost = {...postRecord, createdBy};
+            this.nextReq.newPost = { ...postRecord, createdBy };
 
             this.nextReq.postId = postRecord.postId;
 
@@ -161,7 +147,7 @@ class PostsController {
 
             const checkWho: { [index: string]: boolean } = { lecture: true, student: false }
 
-            const account = checkWho[role] ? await this.lectureService.findBy({ACCOUNT_ID: id}) : await this.studentService.findBy({ACCOUNT_ID:id});
+            const account = checkWho[role] ? await this.lectureService.findBy({ MA_GIANG_VIEN: id }) : await this.studentService.findBy({ MA_SINH_VIEN: id });
 
             const { HO_GIANG_VIEN, HO_SINH_VIEN, TEN_GIANG_VIEN, TEN_SINH_VIEN } = account.recordset[0];
 
@@ -188,13 +174,13 @@ class PostsController {
             res.status(500).send();
         }
     }
-    
+
     getInteracts = async (req: ReqType, res: Response) => {
         try {
             const { postId } = req.query;
 
             const interacts = await this.postService.getInteracts(postId)
-            
+
             res.status(200).send(interacts.recordset);
         } catch (error) {
             console.log("PostsController -> getImgs -> error", error)
@@ -207,7 +193,7 @@ class PostsController {
             const { postId } = req.query;
 
             const imgs = await this.postService.getImgs(postId)
-            
+
             res.status(200).send(imgs.recordset);
         } catch (error) {
             console.log("PostsController -> getImgs -> error", error)

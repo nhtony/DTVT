@@ -165,7 +165,7 @@ class AccountsController {
 
     getCredential = async (req: any, res: Response) => {
         try {
-            const { id, role, iat, exp } = req;
+            const { id, role, classId, iat, exp } = req;
 
             const checkWho: { [index: string]: boolean } = { lecture: true, student: false }
 
@@ -178,8 +178,8 @@ class AccountsController {
                 firstName: checkWho[role] ? HO_GIANG_VIEN : HO_SINH_VIEN,
                 lastName: checkWho[role] ? TEN_GIANG_VIEN : TEN_SINH_VIEN,
                 email: EMAIL,
-                iat,
-                exp
+                role,
+                classId
             }
 
             res.status(200).send(credential);
