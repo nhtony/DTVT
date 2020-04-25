@@ -17,7 +17,7 @@ class ClassroomController {
             const splitTimes: { [index: string]: any } = {}
 
             joinTimes.recordset.map((item: any) => {
-                const time = { ...item } ; delete time.classroomId;
+                const time = { ...item }; delete time.classroomId;
                 splitTimes[item.classroomId] ? splitTimes[item.classroomId].push(time) : splitTimes[item.classroomId] = time.id ? [time] : [];
             })
 
@@ -34,10 +34,26 @@ class ClassroomController {
             res.status(500).send({ error: 'Fail!' });
         }
     }
+
+    getStudentList = async (req: ReqType, res: Response) => {
+        try {
+            const { classroomId } = req.query;
+            const studentList = await this.classroomService.getStudentList(classroomId);
+            res.status(200).send(studentList.recordset);
+        } catch (error) {
+            console.log("ClassroomController -> getStudentList -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
 }
 
 export default ClassroomController;
 
+type QueryType = {
+    classroomId: string;
+}
+
 type ReqType = {
     id: string;
+    query: QueryType;
 }

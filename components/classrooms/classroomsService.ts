@@ -48,6 +48,23 @@ class ClassroomService extends CRUD implements IClassroom {
                     ON t.CLASSROOM_ID = c.CLASSROOM_ID
         `)
     }
+
+    async getStudentList(classroomId: string) {
+        return await this.pool.query(`
+            SELECT 
+                s.MA_SINH_VIEN AS studentId,
+                s.HO_SINH_VIEN AS firstName,
+                s.TEN_SINH_VIEN AS lastName,
+                s.MaLop AS classId,
+                s.SDT AS phone,
+                s.EMAIL AS email,
+                s.Lead
+            FROM CLASSROOM_STUDENT_JUNCTION csj 
+                INNER JOIN SINH_VIEN s
+                    ON s.MA_SINH_VIEN = csj.STUDENT_ID
+            WHERE CLASSROOM_ID = '${classroomId}'
+        `)
+    }
 }
 
 export default ClassroomService;

@@ -9,6 +9,11 @@ const classroomRoutes = {
         path: "/classrooms",
         method: "get",
         handler: [authenticate, authorize(["student", "lecture"]), classroomsController.getClassrooms]
+    },
+    getStudentList: {
+        path: "/classrooms/students",
+        method: "get",
+        handler: [authenticate, authorize(["student", "lecture"]), classroomsController.getStudentList]
     }
 }
 
