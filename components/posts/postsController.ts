@@ -9,23 +9,9 @@ import fs from "fs";
 
 @Controller()
 class PostsController {
-
-    /**
-     * postId => image(postId)
-     * post = [
-     * {
-     * postId: 
-     * accountId:
-     * postContent:
-     * imageUrl: []
-     * liked: [accountId]
-     * isLike: check req.id từ token xem có thuộc trong mảng liked hay không?
-     * }]
-     */
-
     private nextReq = {
         postId: '',
-        newPost: '',
+        newPost: null,
     };
 
     constructor(
@@ -38,7 +24,7 @@ class PostsController {
         try {
             const page = parseInt(req.query.page)
             const limit = parseInt(req.query.limit)
-            
+
             const startIndex = (page - 1) * limit
 
             const firstImgs = await this.postService.firstImgs();
@@ -100,11 +86,17 @@ class PostsController {
 
             const postRecord = newPost.recordset[0];
 
-            this.nextReq.newPost = postRecord;
+            const account = await this.lectureService.findBy({ MA_GIANG_VIEN: req.id }, "HO_GIANG_VIEN", "TEN_GIANG_VIEN")
+
+            const { HO_GIANG_VIEN, TEN_GIANG_VIEN } = account.recordset[0];
+
+            const createdBy = HO_GIANG_VIEN + " " + TEN_GIANG_VIEN;
+
+            this.nextReq.newPost = { ...postRecord, createdBy };
 
             this.nextReq.postId = postRecord.postId;
 
-            req.files.length > 0 ? next() : res.status(200).send(postRecord);
+            req.files.length > 0 ? next() : res.status(200).send(this.nextReq.newPost);
         } catch (error) {
             console.log("TCL: PostsController -> createPost -> error", error)
             res.status(500).send({ error: 'Fail!' });
@@ -151,47 +143,17 @@ class PostsController {
         try {
             const { postId, status } = req.body;
 
-            const { id, role } = req;
+            const { id } = req;
 
-            const checkWho: { [index: string]: boolean } = { lecture: true, student: false }
+            const checkStatus: { [index: string]: boolean } = { like: true, unlike: false };
 
-            const account = checkWho[role] ? await this.lectureService.findBy({ACCOUNT_ID: id}) : await this.studentService.findBy({ACCOUNT_ID:id});
+            const handleInteract = checkStatus[status] ? await this.postService.createInteract(postId, id) : await this.postService.deleteInteract(postId, id);
 
-            const { HO_GIANG_VIEN, HO_SINH_VIEN, TEN_GIANG_VIEN, TEN_SINH_VIEN } = account.recordset[0];
-
-            const fullName = checkWho[role] ? HO_GIANG_VIEN + " " + TEN_GIANG_VIEN : HO_SINH_VIEN + " " + TEN_SINH_VIEN;
-
-            const statusObj: { [index: string]: StatusObjType } = {
-                like: {
-                    service: this.postService.createInteract,
-                    check: "NOT_CHANGED",
-                },
-                unlike: {
-                    service: this.postService.deleteInteract,
-                    check: "NOT_DELETED",
-                },
-            };
-
-            const handleInteract = await statusObj[status].service(postId, id, fullName)
-
-            if (check(handleInteract, statusObj[status].check)) return res.status(500).send({ message: 'Fail!' });
+            if (check(handleInteract, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ message: `${status} thành công!` });
         } catch (error) {
             console.log("PostsController -> interactPost -> error", error)
-            res.status(500).send();
-        }
-    }
-    
-    getInteracts = async (req: ReqType, res: Response) => {
-        try {
-            const { postId } = req.query;
-
-            const interacts = await this.postService.getInteracts(postId)
-            
-            res.status(200).send(interacts.recordset);
-        } catch (error) {
-            console.log("PostsController -> getImgs -> error", error)
             res.status(500).send();
         }
     }
@@ -201,7 +163,7 @@ class PostsController {
             const { postId } = req.query;
 
             const imgs = await this.postService.getImgs(postId)
-            
+
             res.status(200).send(imgs.recordset);
         } catch (error) {
             console.log("PostsController -> getImgs -> error", error)
@@ -235,9 +197,4 @@ type ReqType = {
     files: FilesType[];
     body: BodyType;
     query: QueryType;
-}
-
-type StatusObjType = {
-    service: (postId: string, accountId: string, fullName: string) => {};
-    check: string;
 }

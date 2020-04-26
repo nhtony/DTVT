@@ -42,7 +42,7 @@ class OTPController {
 
             const otp = generateOTP();
 
-            const sentEmail = await sendEmail(email, otp);
+            const sentEmail = await sendEmail("Verify OTP", email, otp);
 
             if (!sentEmail) return res.status(500).send({ message: "Fail to send mail!" });
 
@@ -76,7 +76,7 @@ class OTPController {
 
             const otp = generateOTP();
 
-            const sentEmail = await sendEmail(EMAIL, otp);
+            const sentEmail = await sendEmail("Verify OTP for reset password", EMAIL, otp);
 
             if (!sentEmail) return res.status(500).send({ message: "Fail to send mail!" });
 

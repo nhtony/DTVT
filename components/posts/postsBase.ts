@@ -7,10 +7,9 @@ interface IPost {
     getImgs: (postId: string) => {};
     joinLikes: () => {};
     getPosts: (startIndex: number, limit: number) => {};
-    createInteract: (postId: string, accountId: string, fullName: string) => {}
+    createInteract: (postId: string, accountId: string) => {}
     deleteInteract: (postId: string, accountId: string) => {}
     countInteract: () => {};
-    getInteracts: (postId: string) => {};
 };
 
 export default IPost;

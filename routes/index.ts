@@ -9,6 +9,7 @@ import telecomunicationAPIs from '../components/telecomunication/telecomunicatio
 import electricityAPIs from '../components/electricity/electricityAPI';
 import electronicAPIs from '../components/electronic/electronicAPI';
 import authenAPIs from '../components/authentication/authenticationAPI';
+import classroomAPIs from '../components/classrooms/classroomsAPI';
 
 export default [
     ...accountAPIs, 
@@ -22,6 +23,7 @@ export default [
     ...electricityAPIs,
     ...electricityAPIs,
    ...telecomunicationAPIs,
-   ...authenAPIs
+   ...authenAPIs,
+   ...classroomAPIs
 ];
 

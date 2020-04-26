@@ -15,7 +15,9 @@ class PostService extends CRUD implements IPost {
    async createPost(accountId: string, numImg: number, postContent: string) {
         return await this.pool.query(`
         INSERT INTO POST (ACCOUNT_ID, COUNT_IMAGES, POST_CONTENT) 
-            OUTPUT INSERTED.POST_ID AS postId, SYSUTCDATETIME() AS createdAt
+            OUTPUT INSERTED.POST_ID AS postId, 
+                   SYSUTCDATETIME() AS createdAt,
+                   INSERTED.COUNT_IMAGES AS numImgs
             VALUES ('${accountId}', '${numImg}', N'${postContent}')
         `)
     }
@@ -36,7 +38,6 @@ class PostService extends CRUD implements IPost {
     async createMultiImgs(values: Array<string[]>) {
         return await this.pool.query(`INSERT INTO POST_IMAGE (IMAGE_URL, POST_ID) VALUES (${values.join('),(')})`);
     }
-
 
     async firstImgs() { // left join có thể có post -> imageUrl: null
         return await this.pool.query(`
@@ -95,10 +96,10 @@ class PostService extends CRUD implements IPost {
         `)
     }
     
-    async createInteract(postId: string, accountId: string, fullName: string) {
+    async createInteract(postId: string, accountId: string) {
         return await this.pool.query(`
-        INSERT INTO POST_LIKE (POST_ID, ACCOUNT_ID, FULL_NAME)
-        VALUES ('${postId}', '${accountId}', N'${fullName}')
+        INSERT INTO POST_LIKE (POST_ID, ACCOUNT_ID)
+        VALUES ('${postId}', '${accountId}')
         `)
     }
 
@@ -116,10 +117,6 @@ class PostService extends CRUD implements IPost {
         FROM POST_LIKE
         GROUP BY POST_ID
         `)
-    }
-
-    async getInteracts(postId: string) {
-        return await this.pool.query(`SELECT LIKE_ID AS likeId, FULL_NAME AS accountName FROM POST_LIKE WHERE POST_ID = '${postId}' `)
     }
 }
 
