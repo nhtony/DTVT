@@ -7,12 +7,12 @@ const NAME = 'CLASSROOM';
 @Service()
 class ClassroomService extends CRUD implements IClassroom {
 
-    constructor(){
+    constructor() {
         super();
         this.createConnectionPool(NAME);
     }
 
-    async getStudentClassrooms(studentId: string) {
+    async getStudentClassrooms(studentId: string, schoolYear: string, semester: number) {
         return await this.pool.query(`
             SELECT 
                 csj.CLASSROOM_ID AS id,
@@ -31,6 +31,36 @@ class ClassroomService extends CRUD implements IClassroom {
                 INNER JOIN GIANG_VIEN g
                     ON g.MA_GIANG_VIEN = c.LECTURE_ID
             WHERE STUDENT_ID = '${studentId}'
+                AND SCHOOL_YEAR = '${schoolYear}'
+                    AND SEMESTER ='${semester}'
+        `)
+    }
+
+    async getLectureClassrooms (lectureId: string, schoolYear: string, semester: number) {
+        return await this.pool.query(`
+            SELECT
+                CLASSROOM_ID AS id,
+                SUBJECT_ID AS subjectId,
+                THEORY AS theory,
+                PRACTICE AS practice
+            FROM CLASSROOM
+            WHERE LECTURE_ID = '${lectureId}'
+                AND SCHOOL_YEAR = '${schoolYear}'
+                    AND SEMESTER ='${semester}'
+        `)
+    }
+
+    async joinSubject(lectureId: string, schoolYear: string, semester: number) {
+        return await this.pool.query(`
+            SELECT DISTINCT
+                c.SUBJECT_ID AS subjectId,
+                s.TEN_MON_HOC AS subjectName
+            FROM CLASSROOM c
+                INNER JOIN MON_HOC s
+                    ON s.MA_MON_HOC = c.SUBJECT_ID
+            WHERE LECTURE_ID = '${lectureId}'
+                AND SCHOOL_YEAR = '${schoolYear}'
+                    AND SEMESTER ='${semester}'
         `)
     }
 
