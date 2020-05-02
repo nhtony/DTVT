@@ -5,7 +5,6 @@ import LectureService from '../lectures/lecturesService';
 import StudentService from '../students/studentsService';
 import { accountSchema, accountPasswordSchema } from './account';
 import { appendLeadingZeroes } from '../../common/service';
-import { signToken } from '../../common/auth';
 import { check } from '../../common/error';
 
 const bcrypt = require('bcryptjs');

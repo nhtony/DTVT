@@ -5,7 +5,7 @@ const NAME = 'MON_HOC_VIEN_THONG';
 @Service()
 class TelecomunicationService extends CRUD {
 
-    constructor(){
+    constructor() {
         super();
         this.createConnectionPool(NAME);
     }
@@ -44,7 +44,9 @@ class TelecomunicationService extends CRUD {
         return await this.pool.query(`DELETE FROM MON_HOC_VIEN_THONG WHERE MA_MON_HOC = '${subjectId}'`);
     }
 
-    async join() {  
+    async join(pageNumber: Number = 1, rowPerPage: Number = 12) {
+        if(!pageNumber) pageNumber = 1;
+        if(!rowPerPage) rowPerPage = 12;
         return await this.pool.query(`
         SELECT 
             s.MA_MON_HOC AS id,
@@ -58,7 +60,14 @@ class TelecomunicationService extends CRUD {
         JOIN CHUYEN_NGANH cn ON cn.MA_CHUYEN_NGANH = e.MA_CHUYEN_NGANH
         JOIN LOAI_MON l ON l.MA_LOAI_MON = e.MA_LOAI_MON
         WHERE MA_NGANH = '1' OR MA_NGANH = '2'
+        ORDER BY l.TEN_LOAI_MON
+        OFFSET (${pageNumber} - 1) * ${rowPerPage} ROWS
+        FETCH NEXT ${rowPerPage} ROWS ONLY;
         `);
+    }
+
+    async count(){
+        return await this.pool.query('SELECT COUNT(*) AS total FROM MON_HOC_VIEN_THONG');
     }
 }
 export default TelecomunicationService;

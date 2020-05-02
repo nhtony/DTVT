@@ -4,8 +4,8 @@ import CRUD from "../../base/CRUD";
 const NAME = 'MON_HOC_DIEN';
 
 @Service()
-class ElectronicService extends CRUD  {
-    constructor(){
+class ElectronicService extends CRUD {
+    constructor() {
         super();
         this.createConnectionPool(NAME);
     }
@@ -29,7 +29,6 @@ class ElectronicService extends CRUD  {
         this.createQueryBuilder(NAME);
         this.insert(obj);
         const sql = this.getQuery();
-        console.log(sql);
         return await this.pool.query(sql);
     }
 
@@ -41,13 +40,14 @@ class ElectronicService extends CRUD  {
         return await this.pool.query(sql);
     }
 
-
     async delete(subjectId: string) {
         return await this.pool.query(`DELETE FROM MON_HOC_DIEN_TU WHERE MA_MON_HOC = '${subjectId}'`);
     }
 
-    async join(majorId?: string) {  
+    async join(majorId?: any, pageNumber?: Number , rowPerPage?: Number) {
         const conditonQuery = majorId ? `WHERE MA_NGANH = '${majorId}' OR MA_NGANH = '2'` : '';
+        const pagination = (pageNumber && rowPerPage) ? `ORDER BY l.TEN_LOAI_MON
+        OFFSET (${pageNumber} - 1) * ${rowPerPage} ROWS FETCH NEXT ${rowPerPage} ROWS ONLY` : '';
         return await this.pool.query(`
         SELECT 
             s.MA_MON_HOC AS id,
@@ -61,7 +61,12 @@ class ElectronicService extends CRUD  {
         JOIN CHUYEN_NGANH cn ON cn.MA_CHUYEN_NGANH = e.MA_CHUYEN_NGANH
         JOIN LOAI_MON l ON l.MA_LOAI_MON = e.MA_LOAI_MON
         ${conditonQuery}
+        ${pagination}
         `);
+    }
+
+    async count(){
+        return await this.pool.query('SELECT COUNT(*) AS total FROM MON_HOC_DIEN_TU;');
     }
 }
 export default ElectronicService;
