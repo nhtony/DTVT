@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Controller } from "../../DI/Controller";
 import TelecomunicationService from './telecomunicationService';
 import MustSubjectService from '../mustSubject/mustSubjectService';
+import { check } from '../../common/error';
 
 @Controller()
 class TelecomunicationController {
@@ -11,17 +12,20 @@ class TelecomunicationController {
         protected mustSubjectService: MustSubjectService
     ) { }
 
-    getSubjects = async (req: Request, res: Response) => {  
+    getSubjects = async (req: Request, res: Response) => {
         try {
-            const result = await this.telecomnunicationService.join();
+            const pageNumber = Number(req.query.page);
+            const rowPerPage = Number(req.query.limit);
+            const result = await this.telecomnunicationService.join(pageNumber, rowPerPage);
             const subjects = result.recordset;
-            res.status(200).send(subjects);
+            const count = await this.telecomnunicationService.count();
+            const { total } = count.recordset[0];
+            res.status(200).send({ subjects, total });
         } catch (error) {
             console.log("TelecomunicationController -> getSubjects -> error", error)
             res.status(500).send();
         }
     }
-
 
     getSubjectsBySemester = async (req: Request, res: Response) => {
         try {
@@ -36,15 +40,14 @@ class TelecomunicationController {
         }
     }
 
-
     getTreeSubjects = async (req: Request, res: Response) => {
         try {
             const result = await this.telecomnunicationService.join();
-            const subjects = result.recordset;        
+            const subjects = result.recordset;
             const treeSubjects: { [index: string]: any } = {};
-          
+
             const getMustSubs = async (id: string) => {
-                const res = await this.mustSubjectService.findBy({MA_MON_HOC: id});
+                const res = await this.mustSubjectService.findBy({ MA_MON_HOC: id });
                 return res.recordset.length ? res.recordset : null;
             };
             await Promise.all(
@@ -68,7 +71,7 @@ class TelecomunicationController {
     updateSubjectType = async (req: Request, res: Response) => {
         try {
             let { id, subjectType } = req.body;
-            const result = await this.telecomnunicationService.updateTele({MA_LOAI_MON:subjectType}, {MA_MON_HOC:id});
+            const result = await this.telecomnunicationService.updateTele({ MA_LOAI_MON: subjectType }, { MA_MON_HOC: id });
             res.status(200).send(result.recordset);
         } catch (error) {
             console.log("TelecomunicationController -> addSubjectType -> error", error)
@@ -79,10 +82,22 @@ class TelecomunicationController {
     updateSemester = async (req: Request, res: Response) => {
         try {
             let { id, semester } = req.body;
-            const result = await this.telecomnunicationService.updateTele({HOC_KY:semester}, {MA_MON_HOC:id});
+            const result = await this.telecomnunicationService.updateTele({ HOC_KY: semester }, { MA_MON_HOC: id });
             res.status(200).send(result.recordset);
         } catch (error) {
             console.log("TelecomunicationController -> updateSemester -> error", error)
+            res.status(500).send();
+        }
+    }
+
+    deleteSubject = async (req: Request, res: Response) => {
+        try {
+            const { id } = req.body;
+            const deletedSubject = await this.telecomnunicationService.delete(id);
+            if (check(deletedSubject, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
+            res.status(200).send({ message: 'Success!' });
+        } catch (error) {
+            console.log("TelecomunicationController -> deleteSubject -> error", error)
             res.status(500).send();
         }
     }

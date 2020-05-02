@@ -5,32 +5,36 @@ import { Injector } from '../../DI/Injector';
 const telecomunicationController = Injector.resolve<TelecomunicationController>(TelecomunicationController);
 
 const telecomunicationRoutes = {
-    getSubjects: {
+    teleGetSubjects: {
         path: "/telecomunication/subjects",
         method: "get",
         handler: [authenticate, authorize(["admin"]),telecomunicationController.getSubjects]
     },
-    getSubjectsBySemester: {
+    teleGetSubjectsBySemester: {
         path: "/telecomunication/subjects/semester/:semester",
         method: "get",
         handler: [authenticate, authorize(["student"]),telecomunicationController.getSubjectsBySemester]
     },
-    getTreeSubjects: {
+    teleGetTreeSubjects: {
         path: "/telecomunication/subjects/tree",
         method: "get",
         handler: [authenticate, authorize(["student"]),telecomunicationController.getTreeSubjects]
     },
-    updateSubjectType: {
+    teleUpdateSubjectType: {
         path: "/telecomunication/subjects/type/update",
         method: "put",
         handler: [authenticate, authorize(["admin"]),telecomunicationController.updateSubjectType]
     },
-    updateSemester: {
+    teleUpdateSemester: {
         path: "/telecomunication/semester/update",
         method: "put",
         handler: [authenticate, authorize(["admin"]),telecomunicationController.updateSemester]
     },
-
+    teleDeleteSubject: {
+        path: "/telecomunication/subjects",
+        method: "delete",
+        handler: [authenticate, authorize(["admin"]), telecomunicationController.deleteSubject]
+    }
 };
 
 const telecomunicationAPIs = Object.values(telecomunicationRoutes);

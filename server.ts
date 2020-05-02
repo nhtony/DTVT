@@ -21,12 +21,13 @@ const router = express();
 const { PORT = 5000 } = process.env;
 const server = http.createServer(router);
 server.listen(PORT, () => {
-  socketIO(IO(server))
+  applyMiddleware(middleware, router);
+  applyRoutes(routes, router);
+  socketIO(IO(server));
   console.log(`Server is running http://localhost:${PORT}...`)
 });
 
-applyMiddleware(middleware, router);
-applyRoutes(routes, router);
+
 
 
 

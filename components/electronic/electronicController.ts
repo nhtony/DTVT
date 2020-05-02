@@ -1,7 +1,9 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../DI/Controller";
+import electricShema from './electronic';
 import ElectronicService from './electronicService';
 import MustSubjectService from '../mustSubject/mustSubjectService';
+import { check } from '../../common/error';
 
 @Controller()
 class ElectronicController {
@@ -13,22 +15,14 @@ class ElectronicController {
 
     getSubjects = async (req: Request, res: Response) => {
         try {
-            const result = await this.electronicService.join();
+            const pageNumber = Number(req.query.page);
+            const rowPerPage = Number(req.query.limit);
+            const result = await this.electronicService.join(null, pageNumber, rowPerPage);
             const subjects = result.recordset;
-            res.status(200).send(subjects);
+            const count = await this.electronicService.count();
+            const { total } = count.recordset[0];
+            res.status(200).send({ subjects, total });
         } catch (error) {
-            console.log("ElectronicController -> getSubjects -> error", error)
-            res.status(500).send();
-        }
-    }
-
-    getSubjectsByMajor = (majorId: string) => async (req: Request, res: Response) => {
-        try {
-            const result = await this.electronicService.join(majorId);
-            const subjects = result.recordset;
-            res.status(200).send(subjects);
-        } catch (error) {
-            console.log("ElectronicController -> getSubjects -> error", error)
             res.status(500).send();
         }
     }
@@ -45,7 +39,6 @@ class ElectronicController {
             res.status(500).send();
         }
     }
-
 
     getTreeSubjects = (majorId: string) => async (req: Request, res: Response) => {
         try {
@@ -77,6 +70,63 @@ class ElectronicController {
         }
     }
 
+    createdElectronic = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            //Validation
+            const validResult = electricShema.validate(req.body, { abortEarly: false });
+            if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
+            let { id, industry, major, specialized, type, semester, name, number } = req.body;
+            //Check lecutre đã tồn tại chưa
+            const existedSubject = await this.electronicService.findBy({ MA_MON_HOC: id });
+            if (check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
+
+            const subjectObject = {
+                MA_MON_HOC: id,
+                MA_NHOM_NGANH: industry,
+                MA_NGANH: major,
+                MA_CHUYEN_NGANH: specialized,
+                MA_LOAI_MON: type,
+                HOC_KY: semester
+            };
+
+            req.id = id;
+            req.name = name;
+            req.number = number;
+
+            const newSubject = await this.electronicService.createElectro(subjectObject);
+            if (check(newSubject, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail in electronic!' });
+            next();
+        } catch (error) {
+            console.log("ElectronicController -> createdElectronic -> error", error);
+        }
+    }
+
+    updateSubject = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            //Validation
+            const validResult = electricShema.validate(req.body, { abortEarly: false });
+            if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
+            const { id, industry, major, specialized, type, semester } = req.body;
+
+            const existedSubject = await this.electronicService.findBy({ MA_MON_HOC: id });
+            if (!check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Electronic is not existed!" });
+        
+            const object = {
+                MA_NHOM_NGANH: industry,
+                MA_NGANH: major,
+                MA_CHUYEN_NGANH: specialized,
+                MA_LOAI_MON: type,
+                HOC_KY: semester
+            };
+            const updatedEle = await this.electronicService.updateElectro(object, { MA_MON_HOC: id });
+            if (check(updatedEle, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+            next();
+        } catch (error) {
+            console.log("ElectronicController -> updateSubject -> error", error);
+            res.status(500).send();
+        }
+    }
+
     updateSubjectType = async (req: Request, res: Response) => {
         try {
             let { id, subjectType } = req.body;
@@ -95,6 +145,18 @@ class ElectronicController {
             res.status(200).send(result.recordset);
         } catch (error) {
             console.log("ElectronicController -> updateSemester -> error", error)
+            res.status(500).send();
+        }
+    }
+
+    deleteSubject = async (req: Request, res: Response) => {
+        try {
+            const { id } = req.body;
+            const deletedSubject = await this.electronicService.delete(id);
+            if (check(deletedSubject, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
+            res.status(200).send({ message: 'Success!' });
+        } catch (error) {
+            console.log("TCL: SubjectsController -> deleteLecture -> error", error)
             res.status(500).send();
         }
     }

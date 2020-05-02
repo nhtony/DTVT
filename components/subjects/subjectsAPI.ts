@@ -20,11 +20,6 @@ const subjectRoutes = {
         method: "post",
         handler: [authenticate, authorize(["admin"]),subjectController.createSubject]
     },
-    updateSubject: {
-        path: "/subjects",
-        method: "put",
-        handler: [authenticate, authorize(["admin"]),subjectController.updateSubject]
-    },
     updateSubjectStatus: {
         path: "/subjects/status/update",
         method: "put",

@@ -1,56 +1,72 @@
 import ElectronicController from './electronicController';
+import SubjectController from '../subjects/subjectsController';
 import { authenticate, authorize } from '../../middleware/auth';
 import { Injector } from '../../DI/Injector';
 
 const electronicController = Injector.resolve<ElectronicController>(ElectronicController);
+const subjectController = Injector.resolve<SubjectController>(SubjectController);
 
 const electronicRoutes = {
-    getSubjects: {
+    eleGetSubjects: {
         path: "/electronic/subjects",
         method: "get",
-        handler: [authenticate, authorize(["admin"]),electronicController.getSubjects]
+        handler: [authenticate, authorize(["admin"]), electronicController.getSubjects]
     },
-    getSubjectsDDT: {
-        path: "/electronic/subjects/ddt",
-        method: "get",
-        handler:[authenticate, authorize(["admin"]),electronicController.getSubjectsByMajor('0')] 
-    },
-    getSubjectsDTVT: {
-        path: "/electronic/subjects/dtvt",
-        method: "get",
-        handler:[authenticate, authorize(["admin"]),electronicController.getSubjectsByMajor('0')] 
-    },
-    getSubjectsBySemesterDDT: {
+    eleGetSubjectsBySemesterDDT: {
         path: "/electronic/subjects/semester/ddt/:semester",
         method: "get",
-        handler: [authenticate, authorize(["student"]),electronicController.getSubjectsBySemester('0')]
+        handler: [authenticate, authorize(["student"]), electronicController.getSubjectsBySemester('0')]
     },
-    getSubjectsBySemesterDTVT: {
+    eleGetSubjectsBySemesterDTVT: {
         path: "/electronic/subjects/semester/dtvt/:semester",
         method: "get",
-        handler:[ authenticate, authorize(["student"]),electronicController.getSubjectsBySemester('1')]
+        handler: [authenticate, authorize(["student"]), electronicController.getSubjectsBySemester('1')]
     },
-    getTreeSubjectsDDT: {
+    eleGetTreeSubjectsDDT: {
         path: "/electronic/subjects/tree/ddt",
         method: "get",
-        handler: [authenticate, authorize(["student"]),electronicController.getTreeSubjects('0')]
+        handler: [authenticate, authorize(["student"]), electronicController.getTreeSubjects('0')]
     },
-    getTreeSubjectsDTVT: {
+    eleGetTreeSubjectsDTVT: {
         path: "/electronic/subjects/tree/dtvt",
         method: "get",
-        handler: [authenticate, authorize(["student"]),electronicController.getTreeSubjects('1')]
+        handler: [authenticate, authorize(["student"]), electronicController.getTreeSubjects('1')]
     },
-    updateSubjectType: {
+    eleCreatedSubject: {
+        path: "/electronic/subjects",
+        method: "post",
+        handler: [
+            authenticate,
+            authorize(["admin"]),
+            electronicController.createdElectronic,
+            subjectController.createSubject
+        ]
+    },
+    eleUpdateSubject: {
+        path: "/electronic/subjects",
+        method: "put",
+        handler: [
+            authenticate,
+            authorize(["admin"]),
+            electronicController.updateSubject,
+            subjectController.updateSubject
+        ]
+    },
+    eleUpdateSubjectType: {
         path: "/electronic/subjects/type/update",
         method: "put",
-        handler: [authenticate, authorize(["admin"]),electronicController.updateSubjectType]
+        handler: [authenticate, authorize(["admin"]), electronicController.updateSubjectType]
     },
-    updateSemester: {
+    eleUpdateSemester: {
         path: "/electronic/semester/update",
         method: "put",
-        handler: [authenticate, authorize(["admin"]),electronicController.updateSemester]
+        handler: [authenticate, authorize(["admin"]), electronicController.updateSemester]
     },
-
+    eleDeleteSubject: {
+        path: "/electronic/subjects",
+        method: "delete",
+        handler: [authenticate, authorize(["admin"]), electronicController.deleteSubject]
+    }
 };
 
 const electronicAPIs = Object.values(electronicRoutes);
