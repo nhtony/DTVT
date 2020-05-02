@@ -1,5 +1,5 @@
 interface IClassroom {
-    getStudentClassrooms: (studentId: string) => {};
+    getStudentClassrooms: (studentId: string, schoolYear: string, semester: number) => {};
     getStudentList: (classroomId: string) => {};
     joinTimes: () => {};
 };

@@ -1,19 +1,24 @@
 import ClassroomController from './classroomsController';
-import { authenticate, authorize } from '../../middleware/auth';
+import { authenticate } from '../../middleware/auth';
 import { Injector } from '../../DI/Injector';
 
 const classroomsController = Injector.resolve<ClassroomController>(ClassroomController);
 
 const classroomRoutes = {
-    getClassrooms: {
-        path: "/classrooms",
+    getLectureClassrooms: {
+        path: "/classrooms/lecture",
         method: "get",
-        handler: [authenticate, authorize(["student", "lecture"]), classroomsController.getClassrooms]
+        handler: [authenticate, classroomsController.getLectureClassrooms]
+    },
+    getStudentClassrooms: {
+        path: "/classrooms/student",
+        method: "get",
+        handler: [authenticate, classroomsController.getStudentClassrooms]
     },
     getStudentList: {
         path: "/classrooms/students",
         method: "get",
-        handler: [authenticate, authorize(["student", "lecture"]), classroomsController.getStudentList]
+        handler: [authenticate, classroomsController.getStudentList]
     }
 }
 
