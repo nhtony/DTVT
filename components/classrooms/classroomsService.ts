@@ -36,7 +36,7 @@ class ClassroomService extends CRUD implements IClassroom {
         `)
     }
 
-    async getLectureClassrooms (lectureId: string, schoolYear: string, semester: number) {
+    async getLectureClassrooms(lectureId: string, schoolYear: string, semester: number) {
         return await this.pool.query(`
             SELECT
                 CLASSROOM_ID AS id,
@@ -82,17 +82,41 @@ class ClassroomService extends CRUD implements IClassroom {
     async getStudentList(classroomId: string) {
         return await this.pool.query(`
             SELECT 
+                csj.IS_LEAD AS isLead,
                 s.MA_SINH_VIEN AS studentId,
                 s.HO_SINH_VIEN AS firstName,
                 s.TEN_SINH_VIEN AS lastName,
                 s.MaLop AS classId,
                 s.SDT AS phone,
-                s.EMAIL AS email,
-                s.Lead
-            FROM CLASSROOM_STUDENT_JUNCTION csj 
+                s.EMAIL AS email
+            FROM CLASSROOM_STUDENT_JUNCTION csj
                 INNER JOIN SINH_VIEN s
                     ON s.MA_SINH_VIEN = csj.STUDENT_ID
             WHERE CLASSROOM_ID = '${classroomId}'
+        `)
+    }
+
+    async getLectureOfClassroom(classroomId: string) {
+        return await this.pool.query(`
+            SELECT 
+                g.MA_GIANG_VIEN AS lectureId,
+                g.HO_GIANG_VIEN AS firstName,
+                g.TEN_GIANG_VIEN AS lastName,
+                g.EMAIL AS email,
+                g.DIEN_THOAI AS phone
+            FROM CLASSROOM c
+                INNER JOIN GIANG_VIEN g
+                    ON g.MA_GIANG_VIEN = c.LECTURE_ID
+            WHERE CLASSROOM_ID = '${classroomId}'
+        `)
+    }
+
+    async appointLead(studentId: string, classroomId: string, status: number) {
+        return await this.pool.query(`
+            UPDATE CLASSROOM_STUDENT_JUNCTION 
+            SET IS_LEAD = '${status}'
+            WHERE STUDENT_ID = '${studentId}'
+                AND CLASSROOM_ID = '${classroomId}'
         `)
     }
 }

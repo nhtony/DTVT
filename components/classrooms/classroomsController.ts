@@ -1,14 +1,15 @@
-import { Request, Response, NextFunction } from "express";
+import { Response } from "express";
 import { Controller } from "../../DI/Controller";
-import classroomSchema from "./classroom";
 import ClassroomService from './classroomsService';
+import StudentService from "../students/studentsService";
 import { check } from '../../common/error';
 
 @Controller()
 class ClassroomController {
 
     constructor(
-        protected classroomService: ClassroomService
+        protected classroomService: ClassroomService,
+        protected studentService: StudentService
     ) { }
 
     getLectureClassrooms = async (req: ReqType, res: Response) => {
@@ -79,10 +80,44 @@ class ClassroomController {
     getStudentList = async (req: ReqType, res: Response) => {
         try {
             const { classroomId } = req.query;
+
             const studentList = await this.classroomService.getStudentList(classroomId);
-            res.status(200).send(studentList.recordset);
+
+            let leads: any[] = [];
+            let members: any[] = [];
+
+            for (let item of studentList.recordset) {
+                if (item.isLead) leads.push(item);
+                else members.push(item);
+            }
+
+            const result = { "Quản trị viên": leads, "Thành viên": members };
+
+            res.status(200).send(result);
         } catch (error) {
             console.log("ClassroomController -> getStudentList -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    appointLead = (status: number) => async (req: ReqType, res: Response) => {
+        try {
+            const { studentId, classroomId } = req.body;
+
+            const checkStatus: { [index: number]: string } = { 1: "Chỉ định", 0: "Bỏ chỉ định" }
+
+            const existedStudent = await this.studentService.findBy({ MA_SINH_VIEN: studentId });
+            if (!check(existedStudent, 'EXISTED')) return res.status(400).send({ message: 'Student not exist !' });
+
+            const { HO_SINH_VIEN, TEN_SINH_VIEN } = existedStudent.recordset[0];
+            const fullname = HO_SINH_VIEN + " " + TEN_SINH_VIEN;
+
+            const appointLead = await this.classroomService.appointLead(studentId, classroomId, status);
+            if (check(appointLead, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+
+            res.status(200).send({ status: checkStatus[status], fullname });
+        } catch (error) {
+            console.log("ClassroomController -> appointLead -> error", error)
             res.status(500).send({ error: 'Fail!' });
         }
     }
@@ -96,8 +131,14 @@ type QueryType = {
     semester: string;
 }
 
+type BodyType = {
+    studentId: string;
+    classroomId: string;
+}
+
 type ReqType = {
     id: string;
     role: string;
     query: QueryType;
+    body: BodyType;
 }

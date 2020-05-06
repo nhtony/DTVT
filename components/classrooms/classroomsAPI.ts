@@ -19,6 +19,16 @@ const classroomRoutes = {
         path: "/classrooms/students",
         method: "get",
         handler: [authenticate, classroomsController.getStudentList]
+    },
+    appointLead: {
+        path: "/classrooms/lead/appoint",
+        method: "put",
+        handler: [authenticate, classroomsController.appointLead(1)]
+    },
+    dismissLead: {
+        path: "/classrooms/lead/dismiss",
+        method: "put",
+        handler: [authenticate, classroomsController.appointLead(0)]
     }
 }
 
