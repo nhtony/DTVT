@@ -34,7 +34,6 @@ class SubjectsController {
     createSubject = async (req: Request, res: Response) => {
         try {
             let { id, name, number } = req;
-
             //Check lecutre đã tồn tại chưa
             const existedSubject = await this.subjectService.findBy({ MA_MON_HOC: id });
 
@@ -49,7 +48,7 @@ class SubjectsController {
             const newSubject = await this.subjectService.createSubject(subjectObject);
 
             if (check(newSubject, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail in subject!' });
-            res.status(200).send({ message: 'Successful!' });
+            res.status(200).send({ message: 'Môn học vừa được tạo', id });
 
         } catch (error) {
             console.log("SubjectsController -> createSubject -> error", error)
@@ -59,13 +58,13 @@ class SubjectsController {
 
     updateSubject = async (req: Request, res: Response) => {
         try {
-            let { id, name, number } = req.body;
+            let { id, name, number } = req;
             const existedSubject = await this.subjectService.findBy({ MA_MON_HOC: id });
             if (!check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Subject is not existed!" });
             const updatedObj = {
                 TEN_MON_HOC: name,
                 SO_TIN_CHI: number
-            }; 
+            };
             const updatedSubject = await this.subjectService.updateSubject(updatedObj, { MA_MON_HOC: id });
             if (check(updatedSubject, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send({ message: 'Successful!' });
