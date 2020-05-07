@@ -12,6 +12,11 @@ const electronicRoutes = {
         method: "get",
         handler: [authenticate, authorize(["admin"]), electronicController.getSubjects]
     },
+    eleGetSubjectsById: {
+        path: "/electronic/subjects/:id",
+        method: "get",
+        handler: [authenticate, authorize(["admin"]), electronicController.getSubjectsById]
+    },
     eleGetSubjectsBySemesterDDT: {
         path: "/electronic/subjects/semester/ddt/:semester",
         method: "get",
@@ -43,7 +48,7 @@ const electronicRoutes = {
         ]
     },
     eleUpdateSubject: {
-        path: "/electronic/subjects",
+        path: "/electronic/subjects/:id",
         method: "put",
         handler: [
             authenticate,

@@ -27,6 +27,19 @@ class ElectronicController {
         }
     }
 
+
+    getSubjectsById = async (req: Request, res: Response) => {
+        try {
+            let { id } = req.params;
+            const result = await this.electronicService.findOne(id);
+            const { recordset } = result;
+            res.status(200).send(recordset[0]);
+        } catch (error) {
+            console.log("ElectronicController -> getSubjectsById -> error", error)
+            res.status(500).send();
+        }
+    }
+
     getSubjectsBySemester = (majorId: string) => async (req: Request, res: Response) => {
         try {
             let { semester } = req.params;
@@ -74,9 +87,10 @@ class ElectronicController {
         try {
             //Validation
             const validResult = electricShema.validate(req.body, { abortEarly: false });
+
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
-            let { id, industry, major, specialized, type, semester, name, number } = req.body;
-            //Check lecutre đã tồn tại chưa
+            let { id, industry, major, type, semester, name, number } = req.body;
+
             const existedSubject = await this.electronicService.findBy({ MA_MON_HOC: id });
             if (check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
 
@@ -84,18 +98,19 @@ class ElectronicController {
                 MA_MON_HOC: id,
                 MA_NHOM_NGANH: industry,
                 MA_NGANH: major,
-                MA_CHUYEN_NGANH: specialized,
+                MA_CHUYEN_NGANH: 'dt',
                 MA_LOAI_MON: type,
                 HOC_KY: semester
             };
 
+            const newSubject = await this.electronicService.createElectro(subjectObject);
+            if (check(newSubject, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail in electronic!' });
+
             req.id = id;
             req.name = name;
             req.number = number;
-
-            const newSubject = await this.electronicService.createElectro(subjectObject);
-            if (check(newSubject, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail in electronic!' });
             next();
+
         } catch (error) {
             console.log("ElectronicController -> createdElectronic -> error", error);
         }
@@ -103,24 +118,24 @@ class ElectronicController {
 
     updateSubject = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            //Validation
-            const validResult = electricShema.validate(req.body, { abortEarly: false });
-            if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
-            const { id, industry, major, specialized, type, semester } = req.body;
-
+            const { id } = req.params;
+            const { industry, major, type, semester, number, name } = req.body;
             const existedSubject = await this.electronicService.findBy({ MA_MON_HOC: id });
             if (!check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Electronic is not existed!" });
-        
             const object = {
                 MA_NHOM_NGANH: industry,
                 MA_NGANH: major,
-                MA_CHUYEN_NGANH: specialized,
                 MA_LOAI_MON: type,
                 HOC_KY: semester
             };
             const updatedEle = await this.electronicService.updateElectro(object, { MA_MON_HOC: id });
             if (check(updatedEle, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+
+            req.id = id;
+            req.name = name;
+            req.number = number;
             next();
+
         } catch (error) {
             console.log("ElectronicController -> updateSubject -> error", error);
             res.status(500).send();

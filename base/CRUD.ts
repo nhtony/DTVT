@@ -66,10 +66,6 @@ class CRUD extends DAL {
         this.temp = true;
     }
 
-    protected delele() {
-       
-    }
-
     protected where(obj: any, condition: string = 'AND') {
        
         let str: string = '';
