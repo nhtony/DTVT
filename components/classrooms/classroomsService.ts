@@ -96,9 +96,14 @@ class ClassroomService extends CRUD implements IClassroom {
         `)
     }
 
-    async getLectureOfClassroom(classroomId: string) {
+    async getInfoClassroom(classroomId: string) {
         return await this.pool.query(`
             SELECT 
+                c.SUBJECT_ID AS subjectId,
+                c.THEORY AS theory,
+                c.PRACTICE AS practice,
+                s.TEN_MON_HOC AS subjectName,
+                s.SO_TIN_CHI AS credits,
                 g.MA_GIANG_VIEN AS lectureId,
                 g.HO_GIANG_VIEN AS firstName,
                 g.TEN_GIANG_VIEN AS lastName,
@@ -107,6 +112,16 @@ class ClassroomService extends CRUD implements IClassroom {
             FROM CLASSROOM c
                 INNER JOIN GIANG_VIEN g
                     ON g.MA_GIANG_VIEN = c.LECTURE_ID
+                INNER JOIN MON_HOC s
+                    ON s.MA_MON_HOC = c.SUBJECT_ID
+            WHERE CLASSROOM_ID = '${classroomId}'
+        `)
+    }
+
+    async countStudentInClass(classroomId: string) {
+        return await this.pool.query(`
+            SELECT COUNT(*) AS count
+            FROM CLASSROOM_STUDENT_JUNCTION
             WHERE CLASSROOM_ID = '${classroomId}'
         `)
     }

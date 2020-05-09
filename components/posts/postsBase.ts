@@ -3,6 +3,7 @@ interface IPost {
     updatePost: (postId: number, postContent: string) => {};
     deletePost: (postId: number, haveImgs: boolean, haveInteract: boolean) => {};
     createMultiImgs: (values: Array<string[]>) => {};
+    createDestination: (values: Array<string[]>) => {};
     firstImgs: () => {};
     getImgs: (postId: string) => {};
     joinLikes: () => {};

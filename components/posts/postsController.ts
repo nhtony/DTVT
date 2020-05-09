@@ -78,7 +78,7 @@ class PostsController {
 
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            const { postContent } = req.body;
+            const { postContent, destination } = req.body;
 
             const newPost = await this.postService.createPost(req.id, req.files.length, postContent);
 
@@ -96,6 +96,15 @@ class PostsController {
 
             this.nextReq.postId = postRecord.postId;
 
+            
+            if (destination) {
+                const desArr = destination.split(',').map((item: string) => [this.nextReq.postId, `'${item}'`])
+
+                const saveDestination = await this.postService.createDestination(desArr);
+
+                if (check(saveDestination, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+            }
+
             req.files.length > 0 ? next() : res.status(200).send(this.nextReq.newPost);
         } catch (error) {
             console.log("TCL: PostsController -> createPost -> error", error)
@@ -105,9 +114,7 @@ class PostsController {
 
     uploadImages = async (req: ReqType, res: Response) => {
         try {
-            let imageUrlArr: Array<string[]> = [];
-
-            (req.files || []).map(file => imageUrlArr.push([`'${file.path}'`, this.nextReq.postId]))
+            const imageUrlArr: Array<string[]> = (req.files || []).map(file => [`'${file.path}'`, this.nextReq.postId])
 
             const saveImages = await this.postService.createMultiImgs(imageUrlArr);
 
@@ -176,6 +183,7 @@ export default PostsController;
 
 type BodyType = {
     postContent: string;
+    destination: string;
     postId: string;
     status: string;
     type: string;

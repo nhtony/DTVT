@@ -29,6 +29,11 @@ const classroomRoutes = {
         path: "/classrooms/lead/dismiss",
         method: "put",
         handler: [authenticate, classroomsController.appointLead(0)]
+    },
+    getInfoClassroom: {
+        path: "/classrooms/info",
+        method: "get",
+        handler: [authenticate, classroomsController.getInfoClassroom]
     }
 }
 

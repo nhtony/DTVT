@@ -4,6 +4,8 @@ interface IClassroom {
     joinSubject: (lectureId: string, schoolYear: string, semester: number) => {};
     joinTimes: () => {};
     getStudentList: (classroomId: string) => {};
+    getInfoClassroom: (classroomId: string) => {};
+    countStudentInClass: (classroomId: string) => {};
     appointLead: (studentId: string, classroomId: string, status: number) => {};
 };
 

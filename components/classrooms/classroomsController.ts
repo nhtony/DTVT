@@ -121,6 +121,22 @@ class ClassroomController {
             res.status(500).send({ error: 'Fail!' });
         }
     }
+
+    getInfoClassroom = async (req: ReqType, res: Response) => {
+        try {
+            const { classroomId } = req.query;
+
+            const classroomInfo = await this.classroomService.getInfoClassroom(classroomId);
+            const listLength = await this.classroomService.countStudentInClass(classroomId);
+
+            const result = { ...classroomInfo.recordset[0], studentListLength: listLength.recordset[0].count }
+
+            res.status(200).send(result);
+        } catch (error) {
+            console.log("ClassroomController -> getStudentList -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
 }
 
 export default ClassroomController;

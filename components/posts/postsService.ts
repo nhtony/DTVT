@@ -39,6 +39,10 @@ class PostService extends CRUD implements IPost {
         return await this.pool.query(`INSERT INTO POST_IMAGE (IMAGE_URL, POST_ID) VALUES (${values.join('),(')})`);
     }
 
+    async createDestination(values: Array<string[]>) {
+        return await this.pool.query(`INSERT INTO POST_CLASSROOM_JUNCTION (POST_ID, CLASSROOM_ID) VALUES (${values.join('),(')})`)
+    }
+
     async firstImgs() { // left join có thể có post -> imageUrl: null
         return await this.pool.query(`
          SELECT
