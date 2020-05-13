@@ -17,8 +17,6 @@ class ClassroomController {
             const { id } = req;
             const { schoolYear, semester } = req.query;
 
-            const semesterObj: { [index: string]: number } = { I: 1, II: 2, hè: 3 }
-
             const joinTimes = await this.classroomService.joinTimes();
             const splitTimes: { [index: string]: any } = {}
             const splitClassrooms: { [index: string]: any } = {}
@@ -28,14 +26,14 @@ class ClassroomController {
                 splitTimes[item.classroomId] ? splitTimes[item.classroomId].push(time) : splitTimes[item.classroomId] = time.id ? [time] : [];
             })
 
-            const getAllClassrooms = await this.classroomService.getLectureClassrooms(id, schoolYear, semesterObj[semester]);
+            const getAllClassrooms = await this.classroomService.getLectureClassrooms(id, schoolYear, semester);
 
             getAllClassrooms.recordset.map((item: any) => {
                 const classroom = { ...item, times: splitTimes[item.id] }; delete classroom.subjectId;
                 splitClassrooms[item.subjectId] ? splitClassrooms[item.subjectId].push(classroom) : splitClassrooms[item.subjectId] = classroom.id ? [classroom] : [];
             })
 
-            const joinSubject = await this.classroomService.joinSubject(id, schoolYear, semesterObj[semester]);
+            const joinSubject = await this.classroomService.joinSubject(id, schoolYear, semester);
 
             const resultClassrooms = joinSubject.recordset.map((subject: any) => {
                 return { subjectId: subject.subjectId.toString(), subjectName: subject.subjectName, classrooms: splitClassrooms[subject.subjectId] }
@@ -48,12 +46,36 @@ class ClassroomController {
         }
     }
 
+    getConsultants = async (req: ReqType, res: Response) => {
+        try {
+            const { id } = req;
+            const now = new Date();
+            const curYear = now.getFullYear();
+            const howLong = 6; // lấy 6 năm gần nhất (đến năm t7 trường đuổi cmnr)
+            const schoolYearRange = Array.from({ length: howLong }, (v, i) => `'${curYear - i - 1}-${curYear - i}'`);
+            const consultants = await this.classroomService.getConsultants(id, schoolYearRange.join(', '));
+            res.status(200).send(consultants.recordset);
+        } catch (error) {
+            console.log("ClassroomController -> getConsultants -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    getGrades = async (req: ReqType, res: Response) => {
+        try {
+            const { id } = req;
+
+            res.status(200).send();
+        } catch (error) {
+            console.log("ClassroomController -> getGrades -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
     getStudentClassrooms = async (req: ReqType, res: Response) => {
         try {
             const { id } = req;
             const { schoolYear, semester } = req.query;
-
-            const semesterObj: { [index: string]: number } = { I: 1, II: 2, hè: 3 }
 
             const joinTimes = await this.classroomService.joinTimes();
             const splitTimes: { [index: string]: any } = {}
@@ -63,7 +85,7 @@ class ClassroomController {
                 splitTimes[item.classroomId] ? splitTimes[item.classroomId].push(time) : splitTimes[item.classroomId] = time.id ? [time] : [];
             })
 
-            const getAllClassrooms = await this.classroomService.getStudentClassrooms(id, schoolYear, semesterObj[semester]);
+            const getAllClassrooms = await this.classroomService.getStudentClassrooms(id, schoolYear, semester);
 
             const resultClassrooms = getAllClassrooms.recordset.map((classroom: any) => {
                 classroom.id = classroom.id.toString();
@@ -137,6 +159,18 @@ class ClassroomController {
             res.status(500).send({ error: 'Fail!' });
         }
     }
+
+    getCategory = async (req: ReqType, res: Response) => {
+        try {
+            const category = await this.classroomService.getCategory();
+            const record = category.recordset;
+
+            res.status(200).send(record);
+        } catch (error) {
+            console.log("ClassroomController -> getStudentList -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
 }
 
 export default ClassroomController;
@@ -144,7 +178,7 @@ export default ClassroomController;
 type QueryType = {
     classroomId: string;
     schoolYear: string;
-    semester: string;
+    semester: number;
 }
 
 type BodyType = {

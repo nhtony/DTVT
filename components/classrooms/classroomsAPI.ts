@@ -6,9 +6,19 @@ const classroomsController = Injector.resolve<ClassroomController>(ClassroomCont
 
 const classroomRoutes = {
     getLectureClassrooms: {
-        path: "/classrooms/lecture",
+        path: "/classrooms/lecture/classrooms",
         method: "get",
         handler: [authenticate, classroomsController.getLectureClassrooms]
+    },
+    getConsultants: {
+        path: "/classrooms/lecture/consultants",
+        method: "get",
+        handler: [authenticate, classroomsController.getConsultants]
+    },
+    getGrades: {
+        path: "/classrooms/lecture/grades",
+        method: "get",
+        handler: [authenticate, classroomsController.getGrades]
     },
     getStudentClassrooms: {
         path: "/classrooms/student",
@@ -34,7 +44,12 @@ const classroomRoutes = {
         path: "/classrooms/info",
         method: "get",
         handler: [authenticate, classroomsController.getInfoClassroom]
-    }
+    },
+    getCategory: {
+        path: "/classrooms/category",
+        method: "get",
+        handler: [authenticate, classroomsController.getCategory]
+    },
 }
 
 const classroomAPIs = Object.values(classroomRoutes);

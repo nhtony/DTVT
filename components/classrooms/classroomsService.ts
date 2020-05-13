@@ -49,6 +49,15 @@ class ClassroomService extends CRUD implements IClassroom {
                     AND SEMESTER ='${semester}'
         `)
     }
+    
+    async getConsultants(lectureId: string, schoolYearRange: string) {
+        return await this.pool.query(`
+            SELECT CLASS_ID AS classId 
+            FROM CLASS 
+            WHERE CONSULTANT = '${lectureId}'
+                AND SCHOOL_YEAR IN (${schoolYearRange})
+        `)
+    }
 
     async joinSubject(lectureId: string, schoolYear: string, semester: number) {
         return await this.pool.query(`
@@ -133,6 +142,10 @@ class ClassroomService extends CRUD implements IClassroom {
             WHERE STUDENT_ID = '${studentId}'
                 AND CLASSROOM_ID = '${classroomId}'
         `)
+    }
+
+    async getCategory() {
+        return await this.pool.query(`SELECT TYPE_ID AS typeId, TYPE_NAME AS typeName, ACRONYM AS acronym FROM POST_TYPE`)
     }
 }
 
