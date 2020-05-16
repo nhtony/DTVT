@@ -164,12 +164,13 @@ class ElectronicController {
         }
     }
 
-    deleteSubject = async (req: Request, res: Response) => {
+    deleteSubject = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.body;
             const deletedSubject = await this.electronicService.delete(id);
             if (check(deletedSubject, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
-            res.status(200).send({ message: 'Success!' });
+            req.id = id;
+            next();
         } catch (error) {
             console.log("TCL: SubjectsController -> deleteLecture -> error", error)
             res.status(500).send();
