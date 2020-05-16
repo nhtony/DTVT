@@ -32,7 +32,7 @@ class PostsController {
             const firstImgs = await this.postService.firstImgs();
             const joinLikes = await this.postService.joinLikes();
             const countLikes = await this.postService.countInteract();
-
+            
             const splitImage: { [index: string]: any } = {};
             const isLike: { [index: string]: boolean } = {};
             const numLikes: { [index: string]: number } = {};
@@ -56,7 +56,24 @@ class PostsController {
                 numLikes[item.postId] = item.numInteract
             }
 
-            const getAllPosts = type === 0 ? await this.postService.getPosts(startIndex, limit) : await this.postService.postFilterByType(startIndex, limit, table[type], type, junctionId);
+            const queryByType: { [index: string]: Function } = {
+                all: () => `FROM POST p LEFT JOIN GIANG_VIEN ac ON ac.MA_GIANG_VIEN = p.ACCOUNT_ID`,
+                diff: () => `FROM POST p LEFT JOIN GIANG_VIEN ac ON ac.MA_GIANG_VIEN = p.ACCOUNT_ID WHERE TYPE_ID = 0`,
+                filter: (table: string, postType: number, junctionId: string) => `FROM POST_${table}_JUNCTION ptj INNER JOIN POST p ON p.POST_ID = ptj.POST_ID LEFT JOIN GIANG_VIEN ac ON ac.MA_GIANG_VIEN = p.ACCOUNT_ID WHERE p.TYPE_ID = ${postType} AND ptj.${table}_ID = '${junctionId}'`,
+                saved: (accountId: string) => `FROM POST_LIKE pl LEFT JOIN POST p ON p.POST_ID = pl.POST_ID LEFT JOIN GIANG_VIEN ac ON ac.MA_GIANG_VIEN = p.ACCOUNT_ID WHERE pl.ACCOUNT_ID = '${accountId}'`,
+            }
+            
+            const queriesFunc = () => {
+                if(type === 0) {
+                    return queryByType["diff"]()
+                } else if(type === 5) {
+                    return queryByType["saved"](req.id);
+                } else {
+                    return queryByType["filter"](table[type], type, junctionId)
+                }
+            }
+
+            const getAllPosts = await this.postService.getPosts(queriesFunc(), startIndex, limit)
 
             const resultPosts = getAllPosts.recordset.map((post: any) => {
                 post.id = post.id.toString();
@@ -74,7 +91,7 @@ class PostsController {
             res.status(500).send();
         }
     }
-
+    
     createPost = async (req: ReqType, res: Response, next: NextFunction) => {
         try {
             const validResult = postSchema.validate(req.body, { abortEarly: false });
@@ -89,11 +106,14 @@ class PostsController {
 
             const postRecord = newPost.recordset[0];
 
-            const account = await this.lectureService.findBy({ MA_GIANG_VIEN: req.id }, "HO_GIANG_VIEN", "TEN_GIANG_VIEN")
+            const checkWho: { [index: string]: boolean } = { lecture: true, student: false }
 
-            const { HO_GIANG_VIEN, TEN_GIANG_VIEN } = account.recordset[0];
+            const account = checkWho[req.role] ? await this.lectureService.findBy({ MA_GIANG_VIEN: req.id }, "HO_GIANG_VIEN", "TEN_GIANG_VIEN") : await this.studentService.findBy({ MA_SINH_VIEN: req.id }, "HO_SINH_VIEN", "TEN_SINH_VIEN");
 
-            const createdBy = HO_GIANG_VIEN + " " + TEN_GIANG_VIEN;
+            const { HO_GIANG_VIEN, TEN_GIANG_VIEN, HO_SINH_VIEN, TEN_SINH_VIEN } = account.recordset[0];
+
+            const createdBy = checkWho[req.role] ? HO_GIANG_VIEN + " " + TEN_GIANG_VIEN : HO_SINH_VIEN + " " + TEN_SINH_VIEN;
+            console.log(createdBy);
 
             this.nextReq.newPost = { ...postRecord, createdBy };
 
@@ -135,7 +155,7 @@ class PostsController {
         try {
             const { postId, haveImgs, haveInteract, postType } = req.body;
 
-            const table: { [index: number]: string } = { 1: "CLASSROOM", 2: "CLASS", 3: "GRADE" };
+            const table: { [index: number]: string } = { 0: '', 1: "CLASSROOM", 2: "CLASS", 3: "GRADE" };
 
             const postDel = await this.postService.deletePost(postId, haveImgs, haveInteract, table[postType]);
 
@@ -160,7 +180,15 @@ class PostsController {
 
             const checkStatus: { [index: string]: boolean } = { like: true, unlike: false };
 
-            const handleInteract = checkStatus[status] ? await this.postService.createInteract(postId, id) : await this.postService.deleteInteract(postId, id);
+            let handleInteract = null;
+            
+            const existedInteract = await this.postService.getInteractById(postId, id);
+            
+            if(!check(existedInteract, 'EXISTED') && checkStatus[status]) {
+                handleInteract = await this.postService.createInteract(postId, id);
+            } else {
+                handleInteract = await this.postService.deleteInteract(postId, id);
+            }
 
             if (check(handleInteract, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 

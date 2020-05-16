@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response, NextFunction } from "express";
 import { Controller } from "../../DI/Controller";
 import ClassroomService from './classroomsService';
 import StudentService from "../students/studentsService";
@@ -6,6 +6,9 @@ import { check } from '../../common/error';
 
 @Controller()
 class ClassroomController {
+    private nextReq = {
+        classroomInfo: {},
+    };
 
     constructor(
         protected classroomService: ClassroomService,
@@ -144,18 +147,34 @@ class ClassroomController {
         }
     }
 
-    getInfoClassroom = async (req: ReqType, res: Response) => {
+    getInfoClassroom = async (req: ReqType, res: Response, next: NextFunction) => {
         try {
             const { classroomId } = req.query;
 
             const classroomInfo = await this.classroomService.getInfoClassroom(classroomId);
             const listLength = await this.classroomService.countStudentInClass(classroomId);
 
-            const result = { ...classroomInfo.recordset[0], studentListLength: listLength.recordset[0].count }
+            this.nextReq.classroomInfo = { ...classroomInfo.recordset[0], studentListLength: listLength.recordset[0].count }
 
-            res.status(200).send(result);
+            req.role === "student" ? next() : res.status(200).send(this.nextReq.classroomInfo);
         } catch (error) {
-            console.log("ClassroomController -> getStudentList -> error", error)
+            console.log("ClassroomController -> getInfoClassroom -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    checkLeads = async (req: ReqType, res: Response) => {
+        try {
+            const { classroomId } = req.query;
+
+            const result = await this.classroomService.checkLeads(classroomId, req.id);
+            if (!check(result, 'EXISTED')) return res.status(400).send({ message: 'Student is not exist !' });
+
+            const { isLead } = result.recordset[0];
+
+            res.status(200).send({...this.nextReq.classroomInfo, isLead});
+        } catch (error) {
+            console.log("ClassroomController -> checkLeads -> error", error)
             res.status(500).send({ error: 'Fail!' });
         }
     }
@@ -167,7 +186,7 @@ class ClassroomController {
 
             res.status(200).send(record);
         } catch (error) {
-            console.log("ClassroomController -> getStudentList -> error", error)
+            console.log("ClassroomController -> getCategory -> error", error)
             res.status(500).send({ error: 'Fail!' });
         }
     }

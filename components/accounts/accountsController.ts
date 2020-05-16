@@ -133,7 +133,7 @@ class AccountsController {
 
     getCredential = async (req: any, res: Response) => {
         try {
-            const { id, role, classId, iat, exp } = req;
+            const { id, role, classId } = req;
 
             const checkWho: { [index: string]: boolean } = { lecture: true, student: false }
 

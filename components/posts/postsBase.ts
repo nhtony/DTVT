@@ -7,8 +7,7 @@ interface IPost {
     firstImgs: () => {};
     getImgs: (postId: string) => {};
     joinLikes: () => {};
-    postFilterByType: (startIndex: number, limit: number, table: string, postType: number, junctionId: string) => {};
-    getPosts: (startIndex: number, limit: number) => {};
+    getPosts: (query: string, startIndex: number, limit: number) => {};
     createInteract: (postId: string, accountId: string) => {}
     deleteInteract: (postId: string, accountId: string) => {}
     countInteract: () => {};

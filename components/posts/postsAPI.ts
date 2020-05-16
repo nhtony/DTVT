@@ -9,7 +9,7 @@ const postRoutes = {
     createPost: {
         path: "/posts",
         method: "post",
-        handler: [authenticate, authorize(["lecture"]), uploadImages.any(), postController.createPost, postController.uploadImages]
+        handler: [authenticate, uploadImages.any(), postController.createPost, postController.uploadImages]
     },
     delPost: {
         path: "/posts",

@@ -30,8 +30,8 @@ class PostService extends CRUD implements IPost {
         return await this.pool.query(`
         ${haveImgs ? `DELETE FROM POST_IMAGE OUTPUT DELETED.IMAGE_URL AS imgUrl WHERE POST_ID = '${postId}'` : ''}
         ${haveInteract ? `DELETE FROM POST_LIKE WHERE POST_ID = '${postId}'` : ''}
+        ${table ? `DELETE FROM POST_${table}_JUNCTION WHERE POST_ID = '${postId}'` : ''}
         DELETE FROM POST WHERE POST_ID = '${postId}'
-        DELETE FROM POST_${table}_JUNCTION WHERE POST_ID = '${postId}'
         `);
     }
 
@@ -43,7 +43,7 @@ class PostService extends CRUD implements IPost {
         return await this.pool.query(`INSERT INTO POST_${table}_JUNCTION (POST_ID, ${table}_ID) VALUES (${values.join('),(')})`)
     }
 
-    async firstImgs() { // left join có thể có post -> imageUrl: null
+    async firstImgs() {
         return await this.pool.query(`
          SELECT
             p.POST_ID AS postId,
@@ -82,29 +82,7 @@ class PostService extends CRUD implements IPost {
         `)
     }
 
-    async postFilterByType(startIndex: number, limit: number, table: string, postType: number, junctionId: string) {
-        return await this.pool.query(`
-        SELECT 
-            ptj.POST_ID AS id,
-            p.POST_CONTENT AS postContent,
-            p.CREATED_AT AS createdAt,
-            p.COUNT_IMAGES AS numImgs,
-            p.TYPE_ID AS postType,
-            g.HO_GIANG_VIEN AS firstName,
-            g.TEN_GIANG_VIEN AS lastName
-        FROM POST_${table}_JUNCTION ptj
-            INNER JOIN POST p
-                ON p.POST_ID = ptj.POST_ID 
-            LEFT JOIN GIANG_VIEN g 
-                ON g.MA_GIANG_VIEN = p.ACCOUNT_ID
-        WHERE p.TYPE_ID = ${postType} AND ptj.${table}_ID = '${junctionId}'
-        ORDER BY createdAt DESC
-        OFFSET ${startIndex} ROWS
-        FETCH NEXT ${limit} ROWS ONLY
-        `)
-    }
-
-    async getPosts(startIndex: number, limit: number) {
+    async getPosts(query: string, startIndex: number, limit: number) {
         return await this.pool.query(`
         SELECT 
             p.POST_ID AS id, 
@@ -112,12 +90,9 @@ class PostService extends CRUD implements IPost {
             p.CREATED_AT AS createdAt,
             p.COUNT_IMAGES AS numImgs,
             p.TYPE_ID AS postType,
-            g.HO_GIANG_VIEN AS firstName,
-            g.TEN_GIANG_VIEN AS lastName
-        FROM POST p
-            LEFT JOIN GIANG_VIEN g 
-                ON g.MA_GIANG_VIEN = p.ACCOUNT_ID
-        WHERE TYPE_ID = 0
+            ac.HO_GIANG_VIEN AS firstName, 
+            ac.TEN_GIANG_VIEN AS lastName 
+        ${query}
         ORDER BY createdAt DESC
         OFFSET ${startIndex} ROWS
         FETCH NEXT ${limit} ROWS ONLY
@@ -129,6 +104,10 @@ class PostService extends CRUD implements IPost {
         INSERT INTO POST_LIKE (POST_ID, ACCOUNT_ID)
         VALUES ('${postId}', '${accountId}')
         `)
+    }
+
+    async getInteractById(postId: string, accountId: string) {
+        return await this.pool.query(`SELECT * FROM POST_LIKE WHERE POST_ID = '${postId}' AND ACCOUNT_ID = '${accountId}'`)
     }
 
     async deleteInteract(postId: string, accountId: string) {

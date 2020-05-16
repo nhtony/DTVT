@@ -127,6 +127,15 @@ class ClassroomService extends CRUD implements IClassroom {
         `)
     }
 
+    async checkLeads(classroomId: string, studentId: string) {
+        return await this.pool.query(`
+            SELECT IS_LEAD AS isLead
+            FROM CLASSROOM_STUDENT_JUNCTION
+            WHERE STUDENT_ID = '${studentId}'
+                AND CLASSROOM_ID = '${classroomId}'
+        `)
+    }
+
     async countStudentInClass(classroomId: string) {
         return await this.pool.query(`
             SELECT COUNT(*) AS count
