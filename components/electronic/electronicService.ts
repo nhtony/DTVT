@@ -32,11 +32,13 @@ class ElectronicService extends CRUD {
             s.TEN_MON_HOC AS name,
             s.SO_TIN_CHI AS number,
             e.HOC_KY AS semester,
-            cn.MA_CHUYEN_NGANH AS major,
+            n.MA_NGANH AS major,
+            nn.MA_NHOM_NGANH AS industry,
             l.MA_LOAI_MON AS type
         FROM MON_HOC_DIEN_TU e
         JOIN MON_HOC s ON s.MA_MON_HOC = e.MA_MON_HOC
-        JOIN CHUYEN_NGANH cn ON cn.MA_CHUYEN_NGANH = e.MA_CHUYEN_NGANH
+        JOIN NGANH n ON n.MA_NGANH = e.MA_NGANH
+        JOIN NHOM_NGANH nn ON nn.MA_NHOM_NGANH = nn.MA_NHOM_NGANH 
         JOIN LOAI_MON l ON l.MA_LOAI_MON = e.MA_LOAI_MON 
         WHERE s.MA_MON_HOC = '${id}'`);
     }
@@ -56,8 +58,8 @@ class ElectronicService extends CRUD {
         return await this.pool.query(sql);
     }
 
-    async delete(subjectId: string) {
-        return await this.pool.query(`DELETE FROM MON_HOC_DIEN_TU WHERE MA_MON_HOC = '${subjectId}'`);
+    async delete(id: string) {
+        return await this.pool.query(`DELETE FROM MON_HOC_DIEN_TU WHERE MA_MON_HOC = '${id}'`);
     }
 
     async join(majorId?: any, pageNumber?: Number, rowPerPage?: Number) {

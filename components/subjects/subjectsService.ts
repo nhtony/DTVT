@@ -41,7 +41,7 @@ class SubjectService extends CRUD {
         return await this.pool.query(sql);
     }
 
-    async delete(id: string) {
+    async delete(id: any) {
         return await this.pool.query(`DELETE FROM MON_HOC WHERE MA_MON_HOC = '${id}' `);
     }
 }

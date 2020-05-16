@@ -67,7 +67,7 @@ class SubjectsController {
             };
             const updatedSubject = await this.subjectService.updateSubject(updatedObj, { MA_MON_HOC: id });
             if (check(updatedSubject, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
-            res.status(200).send({ message: 'Successful!' });
+            res.status(200).send({ message: 'Môn học vừa chỉnh sửa', id });
         } catch (error) {
             console.log("SubjectsController -> updateSubject -> error", error);
             res.status(500).send();
@@ -101,7 +101,7 @@ class SubjectsController {
 
     deleteSubject = async (req: Request, res: Response) => {
         try {
-            const { id } = req.body;
+            const { id } = req;
             const deletedSubject = await this.subjectService.delete(id);
             if (check(deletedSubject, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send({ message: 'Success!' });
@@ -110,7 +110,6 @@ class SubjectsController {
             res.status(500).send();
         }
     }
-
 }
 
 export default SubjectsController;

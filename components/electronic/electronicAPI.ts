@@ -70,7 +70,7 @@ const electronicRoutes = {
     eleDeleteSubject: {
         path: "/electronic/subjects",
         method: "delete",
-        handler: [authenticate, authorize(["admin"]), electronicController.deleteSubject]
+        handler: [authenticate, authorize(["admin"]), electronicController.deleteSubject, subjectController.deleteSubject]
     }
 };
 
