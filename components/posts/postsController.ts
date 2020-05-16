@@ -22,8 +22,10 @@ class PostsController {
 
     getPosts = async (req: ReqType, res: Response) => {
         try {
-            const page = parseInt(req.query.page)
-            const limit = parseInt(req.query.limit)
+            const { junctionId } = req.query;
+            const type = parseInt(req.query.type);
+            const page = parseInt(req.query.page);
+            const limit = parseInt(req.query.limit);
 
             const startIndex = (page - 1) * limit
 
@@ -34,6 +36,7 @@ class PostsController {
             const splitImage: { [index: string]: any } = {};
             const isLike: { [index: string]: boolean } = {};
             const numLikes: { [index: string]: number } = {};
+            const table: { [index: number]: string } = { 1: "CLASSROOM", 2: "CLASS", 3: "GRADE" };
 
             firstImgs.recordset.map((item: any) => {
                 const image = {
@@ -53,7 +56,7 @@ class PostsController {
                 numLikes[item.postId] = item.numInteract
             }
 
-            const getAllPosts = await this.postService.getPosts(startIndex, limit);
+            const getAllPosts = type === 0 ? await this.postService.getPosts(startIndex, limit) : await this.postService.postFilterByType(startIndex, limit, table[type], type, junctionId);
 
             const resultPosts = getAllPosts.recordset.map((post: any) => {
                 post.id = post.id.toString();
@@ -78,9 +81,9 @@ class PostsController {
 
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            const { postContent } = req.body;
+            const { postContent, postType, destination } = req.body;
 
-            const newPost = await this.postService.createPost(req.id, req.files.length, postContent);
+            const newPost = await this.postService.createPost(req.id, req.files.length, postContent, postType);
 
             if (check(newPost, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
@@ -96,6 +99,16 @@ class PostsController {
 
             this.nextReq.postId = postRecord.postId;
 
+            const table: { [index: number]: string } = { 1: "CLASSROOM", 2: "CLASS", 3: "GRADE" };
+
+            if (postType !== 0 && destination) {
+                const desArr = destination.split(',').map((item: string) => [this.nextReq.postId, `'${item}'`])
+
+                const saveDestination = await this.postService.createDestination(desArr, table[postType]);
+
+                if (check(saveDestination, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+            }
+
             req.files.length > 0 ? next() : res.status(200).send(this.nextReq.newPost);
         } catch (error) {
             console.log("TCL: PostsController -> createPost -> error", error)
@@ -105,9 +118,7 @@ class PostsController {
 
     uploadImages = async (req: ReqType, res: Response) => {
         try {
-            let imageUrlArr: Array<string[]> = [];
-
-            (req.files || []).map(file => imageUrlArr.push([`'${file.path}'`, this.nextReq.postId]))
+            const imageUrlArr: Array<string[]> = (req.files || []).map(file => [`'${file.path}'`, this.nextReq.postId])
 
             const saveImages = await this.postService.createMultiImgs(imageUrlArr);
 
@@ -122,9 +133,11 @@ class PostsController {
 
     deletePost = async (req: Request, res: Response) => {
         try {
-            const { postId, haveImgs, haveInteract } = req.body;
+            const { postId, haveImgs, haveInteract, postType } = req.body;
 
-            const postDel = await this.postService.deletePost(postId, haveImgs, haveInteract);
+            const table: { [index: number]: string } = { 1: "CLASSROOM", 2: "CLASS", 3: "GRADE" };
+
+            const postDel = await this.postService.deletePost(postId, haveImgs, haveInteract, table[postType]);
 
             if (check(postDel, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
 
@@ -176,6 +189,9 @@ export default PostsController;
 
 type BodyType = {
     postContent: string;
+    postType: number;
+    destination: string;
+    category: number;
     postId: string;
     status: string;
     type: string;
@@ -189,6 +205,8 @@ type QueryType = {
     page: string;
     limit: string;
     postId: string;
+    type: string;
+    junctionId: string;
 }
 
 type ReqType = {
