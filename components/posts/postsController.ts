@@ -57,19 +57,32 @@ class PostsController {
             }
 
             const queryByType: { [index: string]: Function } = {
-                all: () => `FROM POST p LEFT JOIN GIANG_VIEN ac ON ac.MA_GIANG_VIEN = p.ACCOUNT_ID`,
-                diff: () => `FROM POST p LEFT JOIN GIANG_VIEN ac ON ac.MA_GIANG_VIEN = p.ACCOUNT_ID WHERE TYPE_ID = 0`,
-                filter: (table: string, postType: number, junctionId: string) => `FROM POST_${table}_JUNCTION ptj INNER JOIN POST p ON p.POST_ID = ptj.POST_ID LEFT JOIN GIANG_VIEN ac ON ac.MA_GIANG_VIEN = p.ACCOUNT_ID WHERE p.TYPE_ID = ${postType} AND ptj.${table}_ID = '${junctionId}'`,
-                saved: (accountId: string) => `FROM POST_LIKE pl LEFT JOIN POST p ON p.POST_ID = pl.POST_ID LEFT JOIN GIANG_VIEN ac ON ac.MA_GIANG_VIEN = p.ACCOUNT_ID WHERE pl.ACCOUNT_ID = '${accountId}'`,
+                all: (checkWho: string) => 
+                `FROM POST p 
+                LEFT JOIN ${checkWho} ac ON ac.MA_${checkWho} = p.ACCOUNT_ID`,
+                diff: (checkWho: string) => 
+                `FROM POST p 
+                LEFT JOIN ${checkWho} ac ON ac.MA_${checkWho} = p.ACCOUNT_ID WHERE TYPE_ID = 0`,
+                filter: (checkWho: string, table: string, postType: number, junctionId: string) => 
+                `FROM POST_${table}_JUNCTION ptj 
+                INNER JOIN POST p ON p.POST_ID = ptj.POST_ID 
+                LEFT JOIN ${checkWho} ac ON ac.MA_${checkWho} = p.ACCOUNT_ID 
+                WHERE p.TYPE_ID = ${postType} 
+                AND ptj.${table}_ID = '${junctionId}' `,
+                saved: (checkWho: string, accountId: string) => 
+                `FROM POST_LIKE pl 
+                LEFT JOIN POST p ON p.POST_ID = pl.POST_ID 
+                LEFT JOIN ${checkWho} ac ON ac.MA_${checkWho} = p.ACCOUNT_ID 
+                WHERE pl.ACCOUNT_ID = '${accountId}'`,
             }
             
             const queriesFunc = () => {
                 if(type === 0) {
-                    return queryByType["diff"]()
+                    return [queryByType["diff"]("GIANG_VIEN"), queryByType["diff"]("SINH_VIEN")]
                 } else if(type === 5) {
-                    return queryByType["saved"](req.id);
+                    return [queryByType["saved"]("GIANG_VIEN", req.id), queryByType["saved"]("SINH_VIEN", req.id)];
                 } else {
-                    return queryByType["filter"](table[type], type, junctionId)
+                    return [queryByType["filter"]("GIANG_VIEN", table[type], type, junctionId), queryByType["filter"]("SINH_VIEN", table[type], type, junctionId)]
                 }
             }
 
@@ -113,7 +126,6 @@ class PostsController {
             const { HO_GIANG_VIEN, TEN_GIANG_VIEN, HO_SINH_VIEN, TEN_SINH_VIEN } = account.recordset[0];
 
             const createdBy = checkWho[req.role] ? HO_GIANG_VIEN + " " + TEN_GIANG_VIEN : HO_SINH_VIEN + " " + TEN_SINH_VIEN;
-            console.log(createdBy);
 
             this.nextReq.newPost = { ...postRecord, createdBy };
 

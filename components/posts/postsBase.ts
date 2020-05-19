@@ -7,7 +7,7 @@ interface IPost {
     firstImgs: () => {};
     getImgs: (postId: string) => {};
     joinLikes: () => {};
-    getPosts: (query: string, startIndex: number, limit: number) => {};
+    getPosts: (queryDiff: string[], startIndex: number, limit: number) => {};
     createInteract: (postId: string, accountId: string) => {}
     deleteInteract: (postId: string, accountId: string) => {}
     countInteract: () => {};

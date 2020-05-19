@@ -82,7 +82,7 @@ class PostService extends CRUD implements IPost {
         `)
     }
 
-    async getPosts(query: string, startIndex: number, limit: number) {
+    async getPosts(queryDiff: string[], startIndex: number, limit: number) {
         return await this.pool.query(`
         SELECT 
             p.POST_ID AS id, 
@@ -92,7 +92,18 @@ class PostService extends CRUD implements IPost {
             p.TYPE_ID AS postType,
             ac.HO_GIANG_VIEN AS firstName, 
             ac.TEN_GIANG_VIEN AS lastName 
-        ${query}
+        ${queryDiff[0]}
+        AND p.ACCOUNT_ID = ac.MA_GIANG_VIEN
+        UNION SELECT 
+            p.POST_ID AS id, 
+            p.POST_CONTENT AS postContent,
+            p.CREATED_AT AS createdAt,
+            p.COUNT_IMAGES AS numImgs,
+            p.TYPE_ID AS postType,
+            ac.HO_SINH_VIEN AS firstName, 
+            ac.TEN_SINH_VIEN AS lastName
+        ${queryDiff[1]}
+        AND p.ACCOUNT_ID = ac.MA_SINH_VIEN
         ORDER BY createdAt DESC
         OFFSET ${startIndex} ROWS
         FETCH NEXT ${limit} ROWS ONLY
