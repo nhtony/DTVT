@@ -91,7 +91,7 @@ class PostService extends CRUD implements IPost {
             p.COUNT_IMAGES AS numImgs,
             p.TYPE_ID AS postType,
             ac.HO_GIANG_VIEN AS firstName, 
-            ac.TEN_GIANG_VIEN AS lastName 
+            ac.TEN_GIANG_VIEN AS lastName
         ${queryDiff[0]}
         AND p.ACCOUNT_ID = ac.MA_GIANG_VIEN
         UNION SELECT 
@@ -107,6 +107,63 @@ class PostService extends CRUD implements IPost {
         ORDER BY createdAt DESC
         OFFSET ${startIndex} ROWS
         FETCH NEXT ${limit} ROWS ONLY
+        `)
+    }
+
+    async checkWhoById(postId: string) {
+        return await this.pool.query(`
+        SELECT
+            ac.QUYEN AS role
+        FROM POST p
+            INNER JOIN ACCOUNT ac 
+                ON ac.ACCOUNT_ID = p.ACCOUNT_ID 
+        WHERE p.POST_ID = '${postId}'
+        `)
+    }
+    
+    async firstImgOnePost(postId: string) {
+        return await this.pool.query(`
+        SELECT TOP 1 
+            IMAGE_ID AS id, 
+            IMAGE_URL AS imageUrl
+        FROM POST_IMAGE
+        WHERE POST_ID = '${postId}'
+        `)
+    }
+
+    async getPostDetail(postId: string, who: string) {
+        return await this.pool.query(`
+        SELECT
+            p.POST_ID AS id, 
+            p.POST_CONTENT AS postContent,
+            p.CREATED_AT AS createdAt,
+            p.COUNT_IMAGES AS numImgs,
+            p.TYPE_ID AS postType,
+            ac.HO_${who} AS firstName, 
+            ac.TEN_${who} AS lastName,
+            COUNT(pl.LIKE_ID) AS numInteract
+        FROM POST p
+            INNER JOIN ${who} ac
+                ON ac.MA_${who} = p.ACCOUNT_ID
+            LEFT JOIN POST_LIKE pl
+                ON pl.POST_ID = p.POST_ID
+        WHERE p.POST_ID = '${postId}'
+        GROUP BY
+            p.POST_ID, 
+            p.POST_CONTENT,
+            p.CREATED_AT,
+            p.COUNT_IMAGES,
+            p.TYPE_ID,
+            ac.HO_${who},
+            ac.TEN_${who}
+        `)
+    }
+
+    async checkIsLiked(postId: string, accountId: string) {
+        return await this.pool.query(`
+        SELECT *
+        FROM POST_LIKE
+        WHERE ACCOUNT_ID = '${accountId}' AND POST_ID = '${postId}'
         `)
     }
     

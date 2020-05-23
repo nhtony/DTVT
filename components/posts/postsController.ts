@@ -105,6 +105,32 @@ class PostsController {
         }
     }
     
+    getPostDetail = async (req: ReqType, res: Response) => {
+        try {
+            const { postId } = req.params;
+
+            const findWhoById = await this.postService.checkWhoById(postId);
+            if (!check(findWhoById, 'EXISTED')) return res.status(400).send({ message: "ID is not exist!" });
+            
+            const checkWho: { [index: string]: string } = { lecture: "GIANG_VIEN", student: "SINH_VIEN" }
+
+            const postDetail = await this.postService.getPostDetail(postId, checkWho[findWhoById.recordset[0].role]);
+            if (!check(postDetail, 'EXISTED')) return res.status(400).send({ message: "Post is not exist!" });
+
+            const checkIsLiked = await this.postService.checkIsLiked(postId, req.id);
+            const firstImg = await this.postService.firstImgOnePost(postId);
+
+            postDetail.recordset[0].isLike = check(checkIsLiked, 'EXISTED');
+            postDetail.recordset[0].firstImg = check(firstImg, 'EXISTED') ? firstImg.recordset[0] : null;
+
+            console.log("getPostDetail -> result", postDetail.recordset[0])
+            res.status(200).send(postDetail.recordset[0]);
+        } catch (error) {
+            console.log("PostsController -> getPostDetail -> error", error)
+            res.status(500).send();
+        }
+    }
+
     createPost = async (req: ReqType, res: Response, next: NextFunction) => {
         try {
             const validResult = postSchema.validate(req.body, { abortEarly: false });
@@ -249,10 +275,15 @@ type QueryType = {
     junctionId: string;
 }
 
+type ParamsType = {
+    postId: string;
+}
+
 type ReqType = {
     id: string;
     role: string;
     files: FilesType[];
     body: BodyType;
     query: QueryType;
+    params: ParamsType;
 }

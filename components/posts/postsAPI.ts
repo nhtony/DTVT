@@ -21,6 +21,11 @@ const postRoutes = {
         method: "get",
         handler: [authenticate, postController.getPosts]
     },
+    getPostById: {
+        path: "/posts/detail/:postId",
+        method: "get",
+        handler: [authenticate, postController.getPostDetail]
+    },
     interactPost: {
         path: "/posts/interact",
         method: "post",
