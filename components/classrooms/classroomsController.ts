@@ -1,4 +1,4 @@
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../DI/Controller";
 import ClassroomService from './classroomsService';
 import StudentService from "../students/studentsService";
@@ -96,6 +96,19 @@ class ClassroomController {
             })
 
             res.status(200).send(resultClassrooms);
+        } catch (error) {
+            console.log("ClassroomController -> getClassrooms -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    getClassroomWillOpen = async (req: Request, res: Response) => {
+        try {
+            const { schoolYear, semester } = req.query;
+
+            const result = await this.classroomService.getClassroomWillOpen(schoolYear, semester);
+
+            res.status(200).send(result);
         } catch (error) {
             console.log("ClassroomController -> getClassrooms -> error", error)
             res.status(500).send({ error: 'Fail!' });

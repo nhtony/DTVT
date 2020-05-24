@@ -49,7 +49,7 @@ class ClassroomService extends CRUD implements IClassroom {
                     AND SEMESTER ='${semester}'
         `)
     }
-    
+
     async getConsultants(lectureId: string, schoolYearRange: string) {
         return await this.pool.query(`
             SELECT CLASS_ID AS classId 
@@ -117,6 +117,19 @@ class ClassroomService extends CRUD implements IClassroom {
             EMAIL AS email
         FROM SINH_VIEN
         WHERE MaLop = '${classId}'
+    `)
+    }
+
+    async getClassroomWillOpen(schoolYear: string, semester: number) {
+        return await this.pool.query(`
+        SELECT 
+            WILL_OPEN_ID AS id,
+            SUBJECT_ID AS subjectId,
+            SEMESTER AS semester,
+            SCHOOL_YEAR AS schoolYear
+        FROM MON_HOC_SAP_MO
+        WHERE SCHOOL_YEAR = '${schoolYear}'
+            AND SEMESTER ='${semester}'
     `)
     }
 

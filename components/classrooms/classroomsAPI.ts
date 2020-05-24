@@ -25,6 +25,11 @@ const classroomRoutes = {
         method: "get",
         handler: [authenticate, classroomsController.getStudentClassrooms]
     },
+    getClassroomWillOpen: {
+        path: "/classrooms/student/will-open",
+        method: "get",
+        handler: [authenticate, classroomsController.getClassroomWillOpen]
+    },
     getStudentList: {
         path: "/classrooms/students",
         method: "get",
