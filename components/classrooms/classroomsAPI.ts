@@ -25,6 +25,11 @@ const classroomRoutes = {
         method: "get",
         handler: [authenticate, classroomsController.getStudentClassrooms]
     },
+    getClassroomWillOpen: {
+        path: "/classrooms/student/will-open",
+        method: "get",
+        handler: [authenticate, classroomsController.getClassroomWillOpen]
+    },
     getStudentList: {
         path: "/classrooms/students",
         method: "get",
@@ -43,7 +48,7 @@ const classroomRoutes = {
     getInfoClassroom: {
         path: "/classrooms/info",
         method: "get",
-        handler: [authenticate, classroomsController.getInfoClassroom]
+        handler: [authenticate, classroomsController.getInfoClassroom, classroomsController.checkLeads]
     },
     getCategory: {
         path: "/classrooms/category",
