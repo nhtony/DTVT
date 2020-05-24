@@ -82,9 +82,10 @@ class ComingSubjectController {
 
     deleteSubject = async (req: Request, res: Response) => {
         try {
-            const { id } = req.body;
-            const intID = parseInt(id);
-            const deletedSubject = await this.comingSubjectService.delete(intID);
+            const { subjectId, schoolYear } = req.body;
+            console.log(req.body);
+             
+            const deletedSubject = await this.comingSubjectService.delete(subjectId, schoolYear);
             if (check(deletedSubject, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send({ message: 'Đã xoá' });
         } catch (error) {

@@ -32,8 +32,8 @@ class ComingSubjectService extends CRUD {
         return await this.pool.query(sql);
     }
 
-    async delete(id: Number) { 
-        return await this.pool.query(`DELETE FROM MON_HOC_SAP_MO WHERE WILL_OPEN_ID = '${id}'`);
+    async delete(subjectId: String, schoolYear: String) { 
+        return await this.pool.query(`DELETE FROM MON_HOC_SAP_MO WHERE SUBJECT_ID = '${subjectId}' AND SCHOOL_YEAR = '${schoolYear}'`);
     }
 
     async join(majorId?: any, pageNumber?: Number, rowPerPage?: Number) {
