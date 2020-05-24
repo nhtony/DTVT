@@ -10,6 +10,7 @@ import electricityAPIs from '../components/electricity/electricityAPI';
 import electronicAPIs from '../components/electronic/electronicAPI';
 import authenAPIs from '../components/authentication/authenticationAPI';
 import classroomAPIs from '../components/classrooms/classroomsAPI';
+import comingSubjectAPIs from '../components/comingSubject/comingSubjectAPI';
 
 export default [
     ...accountAPIs, 
@@ -24,6 +25,7 @@ export default [
     ...electricityAPIs,
    ...telecomunicationAPIs,
    ...authenAPIs,
-   ...classroomAPIs
+   ...classroomAPIs,
+   ...comingSubjectAPIs
 ];
 
