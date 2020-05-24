@@ -6,8 +6,8 @@ interface IClassroom {
     joinTimes: () => {};
     getStudentList: (classroomId: string) => {};
     getInfoClassroom: (classroomId: string) => {};
-    countStudentInClass: (classroomId: string) => {};
-    appointLead: (studentId: string, classroomId: string, status: number) => {};
+    countStudentInClass: (queryByType: string) => {};
+    appointClassroomLead: (studentId: string, classroomId: string, status: number) => {};
     getCategory: () => {};
 };
 
