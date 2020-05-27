@@ -11,6 +11,7 @@ import electronicAPIs from '../components/electronic/electronicAPI';
 import authenAPIs from '../components/authentication/authenticationAPI';
 import classroomAPIs from '../components/classrooms/classroomsAPI';
 import comingSubjectAPIs from '../components/comingSubject/comingSubjectAPI';
+import selectedSubjectAPIs from '../components/selectedSubject/selectedSubjectAPI';
 
 export default [
     ...accountAPIs, 
@@ -26,6 +27,7 @@ export default [
    ...telecomunicationAPIs,
    ...authenAPIs,
    ...classroomAPIs,
-   ...comingSubjectAPIs
+   ...comingSubjectAPIs,
+   ...selectedSubjectAPIs
 ];
 
