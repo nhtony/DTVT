@@ -21,6 +21,18 @@ class SelectedSubjectController {
         }
     }
 
+    getDataChart = async (req: Request, res: Response) => {
+        try {
+            const data = await this.selectedSubjectService.groupBy();
+            const arrayData = data.recordset;
+            const convertData = arrayData.map((item: any) => { return [item.name, item.number] });
+            res.status(200).send(convertData);
+        } catch (error) {
+            console.log("SelectedSubjectController -> getDataChart -> error", error)
+            res.status(500).send();
+        }
+    }
+
     createSubject = async (req: Request, res: Response) => {
         try {
             const { subjectId, studentId, createdAt } = req.body;

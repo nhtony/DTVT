@@ -5,6 +5,11 @@ import { authenticate, authorize } from '../../middleware/auth';
 const selectedSubjectController = Injector.resolve<SelectedSubjectController>(SelectedSubjectController);
 
 const selectedSubjectRoutes = {
+    getDataChart: {
+        path: "/selected-subject/data-chart",
+        method: "get",
+        handler: [authenticate, authorize(["admin"]), selectedSubjectController.getDataChart]
+    },
     fetch: {
         path: "/selected-subject/:studentId",
         method: "get",
@@ -23,4 +28,5 @@ const selectedSubjectRoutes = {
 };
 
 const selectedSubjectAPIs = Object.values(selectedSubjectRoutes);
+
 export default selectedSubjectAPIs;
