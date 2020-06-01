@@ -25,6 +25,11 @@ const classroomRoutes = {
         method: "get",
         handler: [authenticate, classroomsController.getStudentClassrooms]
     },
+    getClassroomWillOpen: {
+        path: "/classrooms/student/will-open",
+        method: "get",
+        handler: [authenticate, classroomsController.getClassroomWillOpen]
+    },
     getStudentList: {
         path: "/classrooms/students",
         method: "get",
@@ -43,13 +48,28 @@ const classroomRoutes = {
     getInfoClassroom: {
         path: "/classrooms/info",
         method: "get",
-        handler: [authenticate, classroomsController.getInfoClassroom]
+        handler: [authenticate, classroomsController.getInfoClassroom, classroomsController.checkLeads]
     },
     getCategory: {
         path: "/classrooms/category",
         method: "get",
         handler: [authenticate, classroomsController.getCategory]
     },
+    createClassroom: {
+        path: "/classrooms",
+        method: "post",
+        handler: [authenticate, classroomsController.createClassroom]
+    },
+    getScores: {
+        path: "/scores",
+        method: "get",
+        handler: [authenticate, classroomsController.getScores]
+    },
+    inputScore: {
+        path: "/scores",
+        method: "put",
+        handler: [authenticate, classroomsController.getScores]
+    }
 }
 
 const classroomAPIs = Object.values(classroomRoutes);

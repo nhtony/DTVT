@@ -8,7 +8,7 @@ const comingSubjectRoutes = {
     fetch: {
         path: "/coming-subject",
         method: "get",
-        handler: [authenticate, authorize(["admin"]), comingSubjectController.getSubjects]
+        handler: [authenticate, comingSubjectController.getSubjects]
     },
     findById: {
         path: "/coming-subject/:id",

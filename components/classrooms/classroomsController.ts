@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { Controller } from "../../DI/Controller";
 import ClassroomService from './classroomsService';
 import StudentService from "../students/studentsService";
@@ -6,6 +6,9 @@ import { check } from '../../common/error';
 
 @Controller()
 class ClassroomController {
+    private nextReq = {
+        classroomInfo: {},
+    };
 
     constructor(
         protected classroomService: ClassroomService,
@@ -99,11 +102,68 @@ class ClassroomController {
         }
     }
 
+    getClassroomWillOpen = async (req: Request, res: Response) => {
+        try {
+            const { schoolYear, semester } = req.query;
+
+            const result = await this.classroomService.getClassroomWillOpen(schoolYear, semester);
+
+            res.status(200).send(result);
+        } catch (error) {
+            console.log("ClassroomController -> getClassrooms -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    createClassroom = async (req: Request, res: Response) => {
+        try {
+            const { subjectId, theory, practice, schoolYear, semester, students } = req.body;
+
+            const splitSchoolYear = schoolYear.substring(2, 4) + schoolYear.substring(7, 9);
+
+            const leadZero = (value: Number) => {
+                if (value < 10) return "0" + value;
+                return value;
+            };
+
+            const classroomId = subjectId + leadZero(theory) + leadZero(practice) + splitSchoolYear + semester;
+
+            const existedClassroom = await this.classroomService.findById(classroomId);
+            if (check(existedClassroom, 'EXISTED')) return res.status(400).send({ message: 'Lớp học này đã tồn tại !' });
+
+            const studentArr = students.split("\n").map((item: string) => [classroomId, item])
+
+            req.body.classroomId = classroomId;
+            req.body.students = studentArr;
+
+            const newClass = await this.classroomService.createClassroom(req.body);
+            if (check(newClass, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+
+            res.status(200).send({ message: "Thêm lớp mới thành công!" });
+        } catch (error) {
+            console.log("ClassroomController -> getClassrooms -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
     getStudentList = async (req: ReqType, res: Response) => {
         try {
             const { classroomId } = req.query;
+            const type = parseInt(req.query.type);
 
-            const studentList = await this.classroomService.getStudentList(classroomId);
+            let studentList = null;
+
+            switch (type) {
+                case 1:
+                    studentList = await this.classroomService.getStudentList(classroomId);
+                    break;
+
+                case 2:
+                    studentList = await this.classroomService.getStudentsInClass(classroomId);
+                    break;
+
+                default: new Error("Không có type đó");
+            }
 
             let leads: any[] = [];
             let members: any[] = [];
@@ -124,7 +184,7 @@ class ClassroomController {
 
     appointLead = (status: number) => async (req: ReqType, res: Response) => {
         try {
-            const { studentId, classroomId } = req.body;
+            const { studentId, classroomId, type } = req.body;
 
             const checkStatus: { [index: number]: string } = { 1: "Chỉ định", 0: "Bỏ chỉ định" }
 
@@ -134,7 +194,20 @@ class ClassroomController {
             const { HO_SINH_VIEN, TEN_SINH_VIEN } = existedStudent.recordset[0];
             const fullname = HO_SINH_VIEN + " " + TEN_SINH_VIEN;
 
-            const appointLead = await this.classroomService.appointLead(studentId, classroomId, status);
+            let appointLead = null;
+
+            switch (parseInt(type)) {
+                case 1:
+                    appointLead = await this.classroomService.appointClassroomLead(studentId, classroomId, status);
+                    break;
+
+                case 2:
+                    appointLead = await this.classroomService.appointClassLead(studentId, classroomId, status);
+                    break;
+
+                default: new Error("Không có type đó");
+            }
+
             if (check(appointLead, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send({ status: checkStatus[status], fullname });
@@ -144,30 +217,91 @@ class ClassroomController {
         }
     }
 
-    getInfoClassroom = async (req: ReqType, res: Response) => {
+    getInfoClassroom = async (req: ReqType, res: Response, next: NextFunction) => {
         try {
             const { classroomId } = req.query;
+            const type = parseInt(req.query.type);
 
-            const classroomInfo = await this.classroomService.getInfoClassroom(classroomId);
-            const listLength = await this.classroomService.countStudentInClass(classroomId);
+            let classroomInfo = null;
 
-            const result = { ...classroomInfo.recordset[0], studentListLength: listLength.recordset[0].count }
+            switch (type) {
+                case 1:
+                    classroomInfo = await this.classroomService.getInfoClassroom(classroomId);
+                    break;
 
-            res.status(200).send(result);
+                case 2:
+                    classroomInfo = await this.classroomService.getInfoClass(classroomId);
+                    break;
+
+                default: new Error("Không có type đó");
+            }
+
+            const queryByType: { [index: number]: string } = {
+                1: `FROM CLASSROOM_STUDENT_JUNCTION WHERE CLASSROOM_ID = '${classroomId}'`,
+                2: `FROM SINH_VIEN WHERE MaLop = '${classroomId}'`
+            }
+
+            const listLength = await this.classroomService.countStudentInClass(queryByType[type]);
+
+            this.nextReq.classroomInfo = { ...classroomInfo.recordset[0], studentListLength: listLength.recordset[0].count }
+
+            req.role === "student" ? next() : res.status(200).send(this.nextReq.classroomInfo);
         } catch (error) {
-            console.log("ClassroomController -> getStudentList -> error", error)
+            console.log("ClassroomController -> getInfoClassroom -> error", error)
             res.status(500).send({ error: 'Fail!' });
         }
     }
 
-    getCategory = async (req: ReqType, res: Response) => {
+    checkLeads = async (req: ReqType, res: Response) => {
         try {
-            const category = await this.classroomService.getCategory();
-            const record = category.recordset;
+            const { classroomId } = req.query;
+            const type = parseInt(req.query.type);
+
+            let result = null;
+
+            switch (type) {
+                case 1:
+                    result = await this.classroomService.checkClassroomLeads(classroomId, req.id);
+                    break;
+
+                case 2:
+                    result = await this.classroomService.checkClassLeads(classroomId, req.id);
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (!check(result, 'EXISTED')) return res.status(400).send({ message: 'Student is not exist !' });
+
+            const { isLead } = result.recordset[0];
+
+            res.status(200).send({ ...this.nextReq.classroomInfo, isLead });
+        } catch (error) {
+            console.log("ClassroomController -> checkLeads -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    getCategory = async (req: Request, res: Response) => {
+        try {
+            const scores = await this.classroomService.getCategory();
+            const record = scores.recordset;
 
             res.status(200).send(record);
         } catch (error) {
-            console.log("ClassroomController -> getStudentList -> error", error)
+            console.log("ClassroomController -> getCategory -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    getScores = async (req: ReqType, res: Response) => {
+        try {
+            const scores = await this.classroomService.getScores(req.id);
+
+            res.status(200).send(scores.recordset);
+        } catch (error) {
+            console.log("ClassroomController -> getScores -> error", error)
             res.status(500).send({ error: 'Fail!' });
         }
     }
@@ -177,11 +311,13 @@ export default ClassroomController;
 
 type QueryType = {
     classroomId: string;
+    type: string;
     schoolYear: string;
     semester: number;
 }
 
 type BodyType = {
+    type: string;
     studentId: string;
     classroomId: string;
 }
@@ -189,6 +325,7 @@ type BodyType = {
 type ReqType = {
     id: string;
     role: string;
+    classId: string;
     query: QueryType;
     body: BodyType;
 }
