@@ -1,6 +1,6 @@
 import PostController from './postsController';
 import { authenticate, authorize } from '../../middleware/auth';
-import { uploadImages } from "../../services/multer";
+import { uploadImages, uploadAttachment } from "../../services/multer";
 import { Injector } from '../../DI/Injector';
 
 const postController = Injector.resolve<PostController>(PostController);
@@ -9,7 +9,12 @@ const postRoutes = {
     createPost: {
         path: "/posts",
         method: "post",
-        handler: [authenticate, uploadImages.any(), postController.createPost, postController.uploadImages]
+        handler: [authenticate, uploadImages("posts").any(), postController.createPost, postController.uploadFiles("post")]
+    },
+    createPostPDF: {
+        path: "/posts/pdf",
+        method: "post",
+        handler: [authenticate, uploadAttachment("pdf").any(), postController.createPost, postController.uploadFiles("pdf")]
     },
     delPost: {
         path: "/posts",

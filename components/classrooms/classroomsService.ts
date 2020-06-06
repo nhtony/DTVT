@@ -87,6 +87,18 @@ class ClassroomService extends CRUD implements IClassroom {
                     ON t.CLASSROOM_ID = c.CLASSROOM_ID
         `)
     }
+    
+    async createClassroom(obj: any) {
+        const { classroomId, lectureId, subjectId, theory, practice, endPercent, examForms, schoolYear, semester, day, room, start, count, students } = obj;
+        return await this.pool.query(`
+            INSERT INTO CLASSROOM (CLASSROOM_ID, SUBJECT_ID, LECTURE_ID, THEORY, PRACTICE, SEMESTER, SCHOOL_YEAR, END_PERCENT, EXAM_FORMS)
+            VALUES ('${classroomId}', '${subjectId}', '${lectureId}', '${theory}', '${practice}', '${semester}', '${schoolYear}', '${endPercent}', N'${examForms}')
+            INSERT INTO CLASSROOM_TIME (CLASSROOM_ID, TIME, ROOM, PERIOD_START, COUNT_PERIOD)
+            VALUES ('${classroomId}', '${day}', '${room}', '${start}', '${count}')
+            INSERT INTO CLASSROOM_STUDENT_JUNCTION (CLASSROOM_ID, STUDENT_ID)
+            VALUES (${students.join('),(')})
+        `)
+    }
 
     async getStudentList(classroomId: string) {
         return await this.pool.query(`
@@ -165,6 +177,12 @@ class ClassroomService extends CRUD implements IClassroom {
     `)
     }
 
+    async findById(classroomId: string) {
+        return await this.pool.query(`
+            SELECT * FROM CLASSROOM WHERE CLASSROOM_ID = '${classroomId}'
+        `)
+    }
+
     async checkClassroomLeads(classroomId: string, studentId: string) {
         return await this.pool.query(`
             SELECT IS_LEAD AS isLead
@@ -207,6 +225,27 @@ class ClassroomService extends CRUD implements IClassroom {
 
     async getCategory() {
         return await this.pool.query(`SELECT TYPE_ID AS typeId, TYPE_NAME AS typeName, ACRONYM AS acronym FROM POST_TYPE`)
+    }
+
+    async getScores(studentId: string) {
+        return await this.pool.query(`
+            SELECT 
+                csj.CLASSROOM_STUDENT_ID AS id,
+                csj.CLASSROOM_ID AS classroomId,
+                csj.MID_SCORE AS midScore,
+                csj.END_SCORE AS endScore,
+                c.SUBJECT_ID AS subjectId,
+                c.END_PERCENT AS endPercent,
+                c.EXAM_FORMS AS examForms,
+                s.TEN_MON_HOC AS subjectName,
+                s.SO_TIN_CHI AS credits
+            FROM CLASSROOM_STUDENT_JUNCTION csj
+                INNER JOIN CLASSROOM c
+                    ON c.CLASSROOM_ID = csj.CLASSROOM_ID
+                INNER JOIN MON_HOC s
+                    ON s.MA_MON_HOC = c.SUBJECT_ID
+            WHERE STUDENT_ID = '${studentId}'
+        `)
     }
 }
 

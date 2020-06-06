@@ -115,6 +115,37 @@ class ClassroomController {
         }
     }
 
+    createClassroom = async (req: Request, res: Response) => {
+        try {
+            const { subjectId, theory, practice, schoolYear, semester, students } = req.body;
+
+            const splitSchoolYear = schoolYear.substring(2, 4) + schoolYear.substring(7, 9);
+
+            const leadZero = (value: Number) => {
+                if (value < 10) return "0" + value;
+                return value;
+            };
+
+            const classroomId = subjectId + leadZero(theory) + leadZero(practice) + splitSchoolYear + semester;
+
+            const existedClassroom = await this.classroomService.findById(classroomId);
+            if (check(existedClassroom, 'EXISTED')) return res.status(400).send({ message: 'Lớp học này đã tồn tại !' });
+
+            const studentArr = students.split("\n").map((item: string) => [classroomId, item])
+
+            req.body.classroomId = classroomId;
+            req.body.students = studentArr;
+
+            const newClass = await this.classroomService.createClassroom(req.body);
+            if (check(newClass, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+
+            res.status(200).send({ message: "Thêm lớp mới thành công!" });
+        } catch (error) {
+            console.log("ClassroomController -> getClassrooms -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
     getStudentList = async (req: ReqType, res: Response) => {
         try {
             const { classroomId } = req.query;
@@ -154,7 +185,7 @@ class ClassroomController {
     appointLead = (status: number) => async (req: ReqType, res: Response) => {
         try {
             const { studentId, classroomId, type } = req.body;
-            
+
             const checkStatus: { [index: number]: string } = { 1: "Chỉ định", 0: "Bỏ chỉ định" }
 
             const existedStudent = await this.studentService.findBy({ MA_SINH_VIEN: studentId });
@@ -230,17 +261,17 @@ class ClassroomController {
 
             switch (type) {
                 case 1:
-                    result = await this.classroomService.checkClassroomLeads(classroomId, req.id);  
+                    result = await this.classroomService.checkClassroomLeads(classroomId, req.id);
                     break;
 
                 case 2:
-                    result = await this.classroomService.checkClassLeads(classroomId, req.id);  
+                    result = await this.classroomService.checkClassLeads(classroomId, req.id);
                     break;
-            
+
                 default:
                     break;
             }
-            
+
             if (!check(result, 'EXISTED')) return res.status(400).send({ message: 'Student is not exist !' });
 
             const { isLead } = result.recordset[0];
@@ -252,14 +283,25 @@ class ClassroomController {
         }
     }
 
-    getCategory = async (req: ReqType, res: Response) => {
+    getCategory = async (req: Request, res: Response) => {
         try {
-            const category = await this.classroomService.getCategory();
-            const record = category.recordset;
+            const scores = await this.classroomService.getCategory();
+            const record = scores.recordset;
 
             res.status(200).send(record);
         } catch (error) {
             console.log("ClassroomController -> getCategory -> error", error)
+            res.status(500).send({ error: 'Fail!' });
+        }
+    }
+
+    getScores = async (req: ReqType, res: Response) => {
+        try {
+            const scores = await this.classroomService.getScores(req.id);
+
+            res.status(200).send(scores.recordset);
+        } catch (error) {
+            console.log("ClassroomController -> getScores -> error", error)
             res.status(500).send({ error: 'Fail!' });
         }
     }
@@ -283,6 +325,7 @@ type BodyType = {
 type ReqType = {
     id: string;
     role: string;
+    classId: string;
     query: QueryType;
     body: BodyType;
 }

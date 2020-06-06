@@ -2,7 +2,7 @@ interface IPost {
     createPost: (accountId: string, numImg: number, postContent: string, postType: number) => {}
     updatePost: (postId: number, postContent: string) => {};
     deletePost: (postId: number, haveImgs: boolean, haveInteract: boolean, table: string) => {};
-    createMultiImgs: (values: Array<string[]>) => {};
+    saveFiles: (values: Array<string[]>) => {};
     createDestination: (values: Array<string[]>, table: string) => {};
     firstImgs: () => {};
     getImgs: (postId: string) => {};

@@ -35,7 +35,7 @@ class PostService extends CRUD implements IPost {
         `);
     }
 
-    async createMultiImgs(values: Array<string[]>) {
+    async saveFiles(values: Array<string[]>) {
         return await this.pool.query(`INSERT INTO POST_IMAGE (IMAGE_URL, POST_ID) VALUES (${values.join('),(')})`);
     }
 

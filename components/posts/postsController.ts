@@ -174,17 +174,19 @@ class PostsController {
         }
     }
 
-    uploadImages = async (req: ReqType, res: Response) => {
+    uploadFiles = (type: string) => async (req: ReqType, res: Response) => {
         try {
-            const imageUrlArr: Array<string[]> = (req.files || []).map(file => [`'${file.path}'`, this.nextReq.postId])
+            const checkType: { [index: string]: number } = { posts: 1, avatar: 2, pdf: 3, word: 4, excel: 5 };
 
-            const saveImages = await this.postService.createMultiImgs(imageUrlArr);
+            const fileUrlArr: Array<string[]> = (req.files || []).map(file => [`'${file.path}'`, this.nextReq.postId]) // checkType[type] sẽ là phần tử t3 trong mảng nhưng không làm kịp chức năng này
 
-            if (check(saveImages, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+            const savefiles = await this.postService.saveFiles(fileUrlArr);
+
+            if (check(savefiles, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
 
             res.status(200).send(this.nextReq.newPost);
         } catch (error) {
-            console.log("PostsController -> uploadImages -> error", error)
+            console.log("PostsController -> uploadFiles -> error", error)
             res.status(500).send({ error: 'Fail!' });
         }
     }

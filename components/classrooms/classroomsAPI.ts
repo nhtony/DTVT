@@ -55,6 +55,21 @@ const classroomRoutes = {
         method: "get",
         handler: [authenticate, classroomsController.getCategory]
     },
+    createClassroom: {
+        path: "/classrooms",
+        method: "post",
+        handler: [authenticate, classroomsController.createClassroom]
+    },
+    getScores: {
+        path: "/scores",
+        method: "get",
+        handler: [authenticate, classroomsController.getScores]
+    },
+    inputScore: {
+        path: "/scores",
+        method: "put",
+        handler: [authenticate, classroomsController.getScores]
+    }
 }
 
 const classroomAPIs = Object.values(classroomRoutes);
