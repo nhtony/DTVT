@@ -11,10 +11,16 @@ class SelectedSubjectService extends CRUD {
         this.createConnectionPool(NAME);
     }
 
-    async findBy(id: string) {
+    async findBy(subjectId:string, studentId:string) {
         return await this.pool.query(`SELECT SUBJECT_ID AS subjectId, STUDENT_ID as studentId 
         FROM MON_DUOC_CHON
-        WHERE ID = ${id}`);
+        WHERE SUBJECT_ID = ${subjectId} AND STUDENT_ID = ${studentId}`);
+    }
+
+    async findByStudent(studentId:string) {
+        return await this.pool.query(`SELECT SUBJECT_ID AS subjectId, STUDENT_ID as studentId 
+        FROM MON_DUOC_CHON
+        WHERE STUDENT_ID = ${studentId}`);
     }
 
     async create(obj: any) {

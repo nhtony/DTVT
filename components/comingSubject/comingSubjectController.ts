@@ -2,14 +2,38 @@ import { Request, Response } from "express";
 import { Controller } from "../../DI/Controller";
 import ComingSubjectSchema from './comingSubject';
 import ComingSubjectService from './comingSubjectService';
+import SelectedSubjectService from '../selectedSubject/selectedSubjectService';
 import { check } from '../../common/error';
 
 @Controller()
 class ComingSubjectController {
 
-    constructor(protected comingSubjectService: ComingSubjectService) { }
+    constructor(protected comingSubjectService: ComingSubjectService,
+        protected selectedSubjectService: SelectedSubjectService
+    ) { }
 
     getSubjects = async (req: Request, res: Response) => {
+        try {
+            const studentId = req.query.id;
+            const result = await this.comingSubjectService.join();
+            const subjects = result.recordset;
+            const resultSubject = await this.selectedSubjectService.findByStudent(studentId);
+            const coming = resultSubject.recordset;
+            const ids: Array<any> = [];
+            coming.forEach((sub: any) => { 
+                if (ids.indexOf(sub.subjectId) === -1) {
+                    ids.push(sub.subjectId);
+                }
+            });
+            const newSubjects = subjects.filter((item:any) => ids.indexOf(item.id) === -1 );
+            res.status(200).send({ subjects:newSubjects });
+        } catch (error) {
+            console.log("ComingSubjectController -> getSubjects -> error", error)
+            res.status(500).send();
+        }
+    }
+
+    getSubjectsForAdmin = async (req: Request, res: Response) => {
         try {
             const pageNumber = Number(req.query.page);
             const rowPerPage = Number(req.query.limit);
@@ -82,7 +106,7 @@ class ComingSubjectController {
 
     deleteSubject = async (req: Request, res: Response) => {
         try {
-            const { subjectId, schoolYear } = req.body;   
+            const { subjectId, schoolYear } = req.body;
             const deletedSubject = await this.comingSubjectService.delete(subjectId, schoolYear);
             if (check(deletedSubject, 'NOT_DELETED')) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send({ message: 'Đã xoá' });

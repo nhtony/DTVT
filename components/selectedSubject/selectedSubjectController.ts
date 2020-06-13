@@ -40,8 +40,8 @@ class SelectedSubjectController {
             const validResult = SelectedSubjectSchema.validate(req.body, { abortEarly: false });
             if (validResult.error) return res.status(422).send({ message: 'Validation fail!', data: validResult.error.details });
 
-            const existedSubject = await this.selectedSubjectService.findBy(subjectId);
-            if (check(existedSubject, 'EXISTED')) return res.status(400).send({ message: "Subject existed!" });
+            const existedSubject = await this.selectedSubjectService.findBy(subjectId,studentId);
+            if (check(existedSubject, 'EXISTED')) return res.status(400).send({ message: `Môn học ${subjectId} đã được chọn`});
 
             const data = {
                 SUBJECT_ID: subjectId,

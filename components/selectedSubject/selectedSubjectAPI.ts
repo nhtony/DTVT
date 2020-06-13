@@ -18,12 +18,12 @@ const selectedSubjectRoutes = {
     create: {
         path: "/selected-subject",
         method: "post",
-        handler: [authenticate, authorize(["admin"]),selectedSubjectController.createSubject]
+        handler: [authenticate, authorize(["student"]),selectedSubjectController.createSubject]
     },
     delete: {
         path: "/selected-subject",
         method: "delete",
-        handler: [authenticate, authorize(["admin"]), selectedSubjectController.deleteSubject]
+        handler: [authenticate, authorize(["student"]), selectedSubjectController.deleteSubject]
     }
 };
 

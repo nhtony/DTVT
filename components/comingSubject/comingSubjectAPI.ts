@@ -8,7 +8,12 @@ const comingSubjectRoutes = {
     fetch: {
         path: "/coming-subject",
         method: "get",
-        handler: [authenticate, comingSubjectController.getSubjects]
+        handler: [authenticate, authorize(["student","admin"]), comingSubjectController.getSubjects]
+    },
+    fetchForAdmin: {
+        path: "/coming-subject/admin",
+        method: "get",
+        handler: [authenticate, authorize(["admin"]), comingSubjectController.getSubjectsForAdmin]
     },
     findById: {
         path: "/coming-subject/:id",
@@ -18,7 +23,7 @@ const comingSubjectRoutes = {
     create: {
         path: "/coming-subject",
         method: "post",
-        handler: [authenticate, authorize(["admin"]),comingSubjectController.createComingSubject]
+        handler: [authenticate, authorize(["admin"]), comingSubjectController.createComingSubject]
     },
     update: {
         path: "/coming-subject/:id",
