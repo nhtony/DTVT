@@ -13,7 +13,7 @@ const selectedSubjectRoutes = {
     fetch: {
         path: "/selected-subject/:studentId",
         method: "get",
-        handler: [authenticate, authorize(["admin"]), selectedSubjectController.getSubjects]
+        handler: [authenticate, authorize(["admin","student"]), selectedSubjectController.getSubjects]
     },
     create: {
         path: "/selected-subject",
