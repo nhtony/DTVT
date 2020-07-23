@@ -45,7 +45,7 @@ class AccountService extends CRUD {
         let stt: number = 0;
         if (status === 'enable') stt = 1;
         else if (status === 'disable') stt = 0;
-        return await this.pool.query(`UPDATE ACCOUNT SET STATUS = '${stt}' WHERE MA_SINH_VIEN = '${id}' OR MA_GIANG_VIEN = '${id}'`);
+        return await this.pool.query(`UPDATE ACCOUNT SET STATUS = ${stt} WHERE ACCOUNT_ID = '${id}'`);
     };
 }
 

@@ -80,11 +80,13 @@ class AccountsController {
             const newAccount = type ? await this.accountService.create({
                 PASSWORD: hashPassword,
                 QUYEN: role,
-                ACCOUNT_ID: id
+                ACCOUNT_ID: id,
+                MA_GIANG_VIEN: id
             }) : await this.accountService.create({
                 PASSWORD: hashPassword,
                 QUYEN: role,
-                ACCOUNT_ID: id
+                ACCOUNT_ID: id,
+                MA_SINH_VIEN: id
             })
 
             if (check(newAccount, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
@@ -105,7 +107,7 @@ class AccountsController {
 
             const activedAccount = isActive ? await this.accountService.updateStatusById(id, 'enable') : await this.accountService.updateStatusById(id, 'disable');
 
-            if (check(activedAccount, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
+            if (!check(activedAccount, 'NOT_CHANGED')) return res.status(500).send({ message: 'Fail!' });
             res.status(200).send({ message: 'Successful!', id });
 
         } catch (error) {
@@ -222,9 +224,10 @@ class AccountsController {
         }
     }
 
-    private checkBirth = async (req: Request, res: Response, birthDB: Date, type: boolean) => {
+    private checkBirth = async (req: Request, res: Response, birthDB: any, type: boolean) => {
         if (type) return false;
-        const formatted_date: string = birthDB.getFullYear() + "-" + appendLeadingZeroes(birthDB.getMonth() + 1) + "-" + appendLeadingZeroes(birthDB.getDate());
+        const date:Date =  birthDB.NGAY_SINH;
+        const formatted_date: string = date.getFullYear() + "-" + appendLeadingZeroes(date.getMonth() + 1) + "-" + appendLeadingZeroes(date.getDate());
         return formatted_date !== req.body.birth;
     }
 }

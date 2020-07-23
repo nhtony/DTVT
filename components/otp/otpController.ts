@@ -37,6 +37,7 @@ class OTPController {
 
             if (MA_SINH_VIEN) { // Nếu MSV có tồn tại trong account thì kiểm trong trong bảng sv đã có email chưa
                 const studentEmail = await this.studentService.findBy({EMAIL:email});
+                console.log(studentEmail);
                 if (check(studentEmail, 'EXISTED')) return res.status(400).send({ message: "Email is actived" });
             } // Không cần check email tại giảng viên
 
