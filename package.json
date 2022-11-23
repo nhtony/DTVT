@@ -22,7 +22,7 @@
     "nodemailer-sendgrid-transport": "^0.2.0",
     "nodemon": "^1.19.4",
     "reflect-metadata": "^0.1.13",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.5.0",
     "tedious": "^6.6.2",
     "tsc-watch": "^4.0.0",
     "typescript": "^3.7.4"
